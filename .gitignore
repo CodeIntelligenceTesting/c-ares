@@ -68,3 +68,6 @@ Makefile.inc.cmake
 cmake_install.cmake
 aminclude_static.am
 src/lib/*/.dirstamp
+
+.cifuzz/
+.cifuzz-*/

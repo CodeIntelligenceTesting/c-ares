@@ -12,7 +12,10 @@ INCLUDE (CheckCSourceCompiles)
 INCLUDE (CheckStructHasMember)
 INCLUDE (CheckLibraryExists)
 
-PROJECT (c-ares LANGUAGES C VERSION "1.34.2" )
+PROJECT (c-ares LANGUAGES C CXX VERSION "1.34.2" )
+
+find_package(cifuzz NO_SYSTEM_ENVIRONMENT_PATH)
+enable_fuzz_testing()
 
 # Set this version before release
 SET (CARES_VERSION "${PROJECT_VERSION}")
@@ -898,3 +901,7 @@ IF (CARES_INSTALL)
     # This must always be last!
     include( CPack )
 ENDIF ()
+
+add_fuzz_test(fuzz fuzz.cpp)
+target_link_libraries(fuzz PRIVATE c-ares::cares_static caresinternal)
+
