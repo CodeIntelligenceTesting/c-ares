@@ -905,3 +905,4 @@ ENDIF ()
 add_fuzz_test(fuzz fuzz.cpp)
 target_link_libraries(fuzz PRIVATE c-ares::cares_static caresinternal)
 
+add_subdirectory(cifuzz-spark)
