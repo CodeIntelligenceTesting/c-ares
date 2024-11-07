@@ -903,6 +903,6 @@ IF (CARES_INSTALL)
 ENDIF ()
 
 add_fuzz_test(fuzz fuzz.cpp)
-target_link_libraries(fuzz PRIVATE c-ares::cares_static caresinternal)
+target_link_libraries(fuzz PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,c-ares::cares_static>")
 
 add_subdirectory(cifuzz-spark)
