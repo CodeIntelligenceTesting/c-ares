@@ -1,1 +1,5 @@
 build-system: cmake
+
+build-system-args:
+  - -DCARES_BUILD_TESTS=ON 
+  - -DCARES_STATIC=ON
