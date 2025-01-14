@@ -1,0 +1,25 @@
+When fuzzing the `ares_getaddrinfo` this is a valid example of how to get the
+result outside of the callback function:
+
+```
+struct ares_addrinfo *result = nullptr;
+ares_getaddrinfo(channel, hostname.c_str(), nullptr, nullptr, [](void *arg, int status, int timeouts, struct ares_addrinfo *res) {
+  if (status == ARES_SUCCESS) {
+    auto result = static_cast<struct ares_addrinfo **>(arg);
+    *result = res;
+  }
+}, &result);  
+// Cleanup
+if (result) {
+  ares_freeaddrinfo(result);
+}
+```
+
+It is important that the `ares_addrinfo *res` in the callback is freed by the
+fuzz test. Therefore an empty callback function is not valid.
+
+The string parameter to `ares_query` must be a null terminated string. Passing
+in the fuzzer input directory will cause false positive findings.
+
+When fuzzing the `ares_gethostbyname` function the `host` parameter passed into
+the callback must not be freed. This will be done automatically by c-ares.
