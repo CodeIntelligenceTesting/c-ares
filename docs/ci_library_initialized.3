@@ -1,0 +1,23 @@
+.\"
+.\" Copyright (C) 2016 by Daniel Stenberg
+.\" SPDX-License-Identifier: MIT
+.\"
+.TH CI_LIBRARY_INITIALIZED 3 "29 Sep 2016"
+.SH NAME
+ci_library_initialized \- get the initialization state
+.SH SYNOPSIS
+.nf
+#include <ci.h>
+
+int ci_library_initialized(void)
+.fi
+.SH DESCRIPTION
+Returns information if c-ci needs to get initialized.
+.SH RETURN VALUE
+\fICI_ENOTINITIALIZED\fP if not initialized and \fICI_SUCCESS\fP if no
+initialization is needed.
+.SH AVAILABILITY
+This function was first introduced in c-ci version 1.11.0
+.SH SEE ALSO
+.BR ci_library_init (3),
+.BR ci_library_cleanup (3)

@@ -1,4 +1,4 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 name: NetBSD
 
@@ -22,8 +22,8 @@ jobs:
         env:
           DIST: NETBSD
           BUILD_TYPE: "cmake"
-          CMAKE_FLAGS: "-DCMAKE_BUILD_TYPE=DEBUG -DCARES_STATIC=ON -DCARES_STATIC_PIC=ON -G Ninja"
-          CMAKE_TEST_FLAGS: "-DCARES_BUILD_TESTS=ON"
+          CMAKE_FLAGS: "-DCMAKE_BUILD_TYPE=DEBUG -DCI_STATIC=ON -DCI_STATIC_PIC=ON -G Ninja"
+          CMAKE_TEST_FLAGS: "-DCI_BUILD_TESTS=ON"
           PKG_PATH: https://cdn.netbsd.org/pub/pkgsrc/packages/NetBSD/amd64/10.0/All/
           TEST_FILTER: "--gtest_filter=-*LiveSearchTXT*:*LiveSearchANY*:*Parallel*"
           TEST_DEBUGGER: "gdb"

@@ -1,38 +1,38 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 
 # Transform Makefile.inc
 transform_makefile_inc("Makefile.inc" "${PROJECT_BINARY_DIR}/src/lib/Makefile.inc.cmake")
 include(${PROJECT_BINARY_DIR}/src/lib/Makefile.inc.cmake)
 
-# Write ares_config.h configuration file.  This is used only for the build.
-CONFIGURE_FILE (ares_config.h.cmake ${PROJECT_BINARY_DIR}/ares_config.h)
+# Write ci_config.h configuration file.  This is used only for the build.
+CONFIGURE_FILE (ci_config.h.cmake ${PROJECT_BINARY_DIR}/ci_config.h)
 
 # Build the dynamic/shared library
-IF (CARES_SHARED)
+IF (CI_SHARED)
 	ADD_LIBRARY (${PROJECT_NAME} SHARED ${CSOURCES})
 
 	# Include resource file in windows builds for versioned DLLs
 	IF (WIN32)
-		TARGET_SOURCES (${PROJECT_NAME} PRIVATE cares.rc)
+		TARGET_SOURCES (${PROJECT_NAME} PRIVATE cci.rc)
 	ENDIF()
 
-	# Convert CARES_LIB_VERSIONINFO libtool version format into VERSION and SOVERSION
+	# Convert CI_LIB_VERSIONINFO libtool version format into VERSION and SOVERSION
 	# Convert from ":" separated into CMake list format using ";"
-	STRING (REPLACE ":" ";" CARES_LIB_VERSIONINFO ${CARES_LIB_VERSIONINFO})
-	LIST (GET CARES_LIB_VERSIONINFO 0 CARES_LIB_VERSION_CURRENT)
-	LIST (GET CARES_LIB_VERSIONINFO 1 CARES_LIB_VERSION_REVISION)
-	LIST (GET CARES_LIB_VERSIONINFO 2 CARES_LIB_VERSION_AGE)
-	MATH (EXPR CARES_LIB_VERSION_MAJOR "${CARES_LIB_VERSION_CURRENT} - ${CARES_LIB_VERSION_AGE}")
-	SET  (CARES_LIB_VERSION_MINOR "${CARES_LIB_VERSION_AGE}")
-	SET  (CARES_LIB_VERSION_RELEASE "${CARES_LIB_VERSION_REVISION}")
+	STRING (REPLACE ":" ";" CI_LIB_VERSIONINFO ${CI_LIB_VERSIONINFO})
+	LIST (GET CI_LIB_VERSIONINFO 0 CI_LIB_VERSION_CURRENT)
+	LIST (GET CI_LIB_VERSIONINFO 1 CI_LIB_VERSION_REVISION)
+	LIST (GET CI_LIB_VERSIONINFO 2 CI_LIB_VERSION_AGE)
+	MATH (EXPR CI_LIB_VERSION_MAJOR "${CI_LIB_VERSION_CURRENT} - ${CI_LIB_VERSION_AGE}")
+	SET  (CI_LIB_VERSION_MINOR "${CI_LIB_VERSION_AGE}")
+	SET  (CI_LIB_VERSION_RELEASE "${CI_LIB_VERSION_REVISION}")
 
 	SET_TARGET_PROPERTIES (${PROJECT_NAME} PROPERTIES
-		EXPORT_NAME                  cares
-		OUTPUT_NAME                  cares
-		COMPILE_PDB_NAME             cares
-		SOVERSION                    ${CARES_LIB_VERSION_MAJOR}
-		VERSION                      "${CARES_LIB_VERSION_MAJOR}.${CARES_LIB_VERSION_MINOR}.${CARES_LIB_VERSION_RELEASE}"
+		EXPORT_NAME                  cci
+		OUTPUT_NAME                  cci
+		COMPILE_PDB_NAME             cci
+		SOVERSION                    ${CI_LIB_VERSION_MAJOR}
+		VERSION                      "${CI_LIB_VERSION_MAJOR}.${CI_LIB_VERSION_MINOR}.${CI_LIB_VERSION_RELEASE}"
 		C_STANDARD                   90
 	)
 
@@ -40,7 +40,7 @@ IF (CARES_SHARED)
 		SET_TARGET_PROPERTIES (${PROJECT_NAME} PROPERTIES C_STANDARD 99)
 	ENDIF ()
 
-	IF (CARES_SYMBOL_HIDING)
+	IF (CI_SYMBOL_HIDING)
 		SET_TARGET_PROPERTIES (${PROJECT_NAME} PROPERTIES
 			C_VISIBILITY_PRESET hidden
 			VISIBILITY_INLINES_HIDDEN YES
@@ -56,14 +56,14 @@ IF (CARES_SHARED)
 		        "${CMAKE_CURRENT_SOURCE_DIR}/include"
 	)
 
-	TARGET_COMPILE_DEFINITIONS (${PROJECT_NAME} PRIVATE HAVE_CONFIG_H=1 CARES_BUILDING_LIBRARY)
+	TARGET_COMPILE_DEFINITIONS (${PROJECT_NAME} PRIVATE HAVE_CONFIG_H=1 CI_BUILDING_LIBRARY)
 
 	TARGET_LINK_LIBRARIES (${PROJECT_NAME}
-		PUBLIC ${CARES_DEPENDENT_LIBS}
+		PUBLIC ${CI_DEPENDENT_LIBS}
 		PRIVATE ${CMAKE_THREAD_LIBS_INIT}
 	)
 
-	IF (CARES_INSTALL)
+	IF (CI_INSTALL)
 		INSTALL (TARGETS ${PROJECT_NAME}
 			EXPORT ${PROJECT_NAME}-targets
 			COMPONENT Library
@@ -79,21 +79,21 @@ IF (CARES_SHARED)
 	ENDIF ()
 	SET (STATIC_SUFFIX "_static")
 
-	# For chain building: add alias targets that look like import libs that would be returned by find_package(c-ares).
-	ADD_LIBRARY (${PROJECT_NAME}::cares_shared ALIAS ${PROJECT_NAME})
-	ADD_LIBRARY (${PROJECT_NAME}::cares        ALIAS ${PROJECT_NAME})
+	# For chain building: add alias targets that look like import libs that would be returned by find_package(c-ci).
+	ADD_LIBRARY (${PROJECT_NAME}::cci_shared ALIAS ${PROJECT_NAME})
+	ADD_LIBRARY (${PROJECT_NAME}::cci        ALIAS ${PROJECT_NAME})
 ENDIF ()
 
 # Build the static library
-IF (CARES_STATIC)
+IF (CI_STATIC)
 	SET (LIBNAME ${PROJECT_NAME}${STATIC_SUFFIX})
 
 	ADD_LIBRARY (${LIBNAME} STATIC ${CSOURCES})
 
 	SET_TARGET_PROPERTIES (${LIBNAME} PROPERTIES
-		EXPORT_NAME                  cares${STATIC_SUFFIX}
-		OUTPUT_NAME                  cares${STATIC_SUFFIX}
-		COMPILE_PDB_NAME             cares${STATIC_SUFFIX}
+		EXPORT_NAME                  cci${STATIC_SUFFIX}
+		OUTPUT_NAME                  cci${STATIC_SUFFIX}
+		COMPILE_PDB_NAME             cci${STATIC_SUFFIX}
 		C_STANDARD                   90
 	)
 
@@ -101,7 +101,7 @@ IF (CARES_STATIC)
 		SET_TARGET_PROPERTIES (${LIBNAME} PROPERTIES C_STANDARD 99)
 	ENDIF ()
 
-	IF (CARES_STATIC_PIC)
+	IF (CI_STATIC_PIC)
 		SET_TARGET_PROPERTIES (${LIBNAME} PROPERTIES POSITION_INDEPENDENT_CODE True)
 	ENDIF ()
 
@@ -114,25 +114,25 @@ IF (CARES_STATIC)
 		        "${CMAKE_CURRENT_SOURCE_DIR}/include"
 	)
 
-	TARGET_COMPILE_DEFINITIONS (${LIBNAME} PRIVATE HAVE_CONFIG_H=1 CARES_BUILDING_LIBRARY)
+	TARGET_COMPILE_DEFINITIONS (${LIBNAME} PRIVATE HAVE_CONFIG_H=1 CI_BUILDING_LIBRARY)
 
 	# Only matters on Windows
 	IF (WIN32 OR CYGWIN)
-		TARGET_COMPILE_DEFINITIONS (${LIBNAME} PUBLIC CARES_STATICLIB)
+		TARGET_COMPILE_DEFINITIONS (${LIBNAME} PUBLIC CI_STATICLIB)
 	ENDIF()
 
-	TARGET_LINK_LIBRARIES (${LIBNAME} PUBLIC ${CARES_DEPENDENT_LIBS})
-	IF (CARES_INSTALL)
+	TARGET_LINK_LIBRARIES (${LIBNAME} PUBLIC ${CI_DEPENDENT_LIBS})
+	IF (CI_INSTALL)
 		INSTALL (TARGETS ${LIBNAME} EXPORT ${PROJECT_NAME}-targets COMPONENT Devel
 			${TARGETS_INST_DEST}
 		)
 	ENDIF ()
 
-	# For chain building: add alias targets that look like import libs that would be returned by find_package(c-ares).
-	ADD_LIBRARY (${PROJECT_NAME}::cares_static ALIAS ${LIBNAME})
-	IF (NOT TARGET ${PROJECT_NAME}::cares)
+	# For chain building: add alias targets that look like import libs that would be returned by find_package(c-ci).
+	ADD_LIBRARY (${PROJECT_NAME}::cci_static ALIAS ${LIBNAME})
+	IF (NOT TARGET ${PROJECT_NAME}::cci)
 		# Only use static for the generic alias if shared lib wasn't built.
-		ADD_LIBRARY (${PROJECT_NAME}::cares ALIAS ${LIBNAME})
+		ADD_LIBRARY (${PROJECT_NAME}::cci ALIAS ${LIBNAME})
 	ENDIF ()
 ENDIF ()
 

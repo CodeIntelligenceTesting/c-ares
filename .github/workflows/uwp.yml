@@ -1,4 +1,4 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 name: Windows UWP (Store)
 on:
@@ -18,12 +18,12 @@ jobs:
         with:
           arch: x64
           uwp: true
-      - name: Checkout c-ares
+      - name: Checkout c-ci
         uses: actions/checkout@v4
-      - name: Build c-ares
+      - name: Build c-ci
         run: |
           mkdir build
-          cmake -DCARES_STATIC=ON -DCARES_STATIC_PIC=ON "-DCMAKE_SYSTEM_VERSION=10.0" -DCMAKE_SYSTEM_NAME=WindowsStore -A x64 -Bbuild
+          cmake -DCI_STATIC=ON -DCI_STATIC_PIC=ON "-DCMAKE_SYSTEM_VERSION=10.0" -DCMAKE_SYSTEM_NAME=WindowsStore -A x64 -Bbuild
           cmake --build build --config Debug
 
 # -DCMAKE_SYSTEM_VERSION=10.0

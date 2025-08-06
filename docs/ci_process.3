@@ -1,0 +1,109 @@
+.\"
+.\" Copyright 1998 by the Massachusetts Institute of Technology.
+.\" SPDX-License-Identifier: MIT
+.\"
+.TH CI_PROCESS 3 "25 July 1998"
+.SH NAME
+ci_process_fds, ci_process_fd, ci_process \- Process events for name resolution
+.SH SYNOPSIS
+.nf
+#include <ci.h>
+
+/*! Events used by ci_fd_events_t */
+typedef enum {
+  CI_FD_EVENT_NONE  = 0,      /*!< No events */
+  CI_FD_EVENT_READ  = 1 << 0, /*!< Read event (including disconnect/error) */
+  CI_FD_EVENT_WRITE = 1 << 1  /*!< Write event */
+} ci_fd_eventflag_t;
+
+/*! Type holding a file descriptor and mask of events, used by
+ *  ci_process_fds() */
+typedef struct {
+  ci_socket_t fd;     /*!< File descriptor */
+  unsigned int  events; /*!< Mask of ci_fd_event_t */
+} ci_fd_events_t;
+
+typedef enum {
+  CI_PROCESS_FLAG_NONE        = 0,
+  CI_PROCESS_FLAG_SKIP_NON_FD = 1 << 0
+} ci_process_flag_t;
+
+
+ci_status_t ci_process_fds(ci_channel_t         *\fIchannel\fP,
+                               const ci_fd_events_t *\fIevents\fP,
+                               size_t                  \fInevents\fP,
+                               unsigned int            \fIflags\fP)
+
+void ci_process_fd(ci_channel_t *\fIchannel\fP,
+                     ci_socket_t \fIread_fd\fP,
+                     ci_socket_t \fIwrite_fd\fP)
+
+void ci_process(ci_channel_t *\fIchannel\fP,
+                  fd_set *\fIread_fds\fP,
+                  fd_set *\fIwrite_fds\fP)
+
+.fi
+.SH DESCRIPTION
+These functions must be used by integrators choosing not to use the
+EventThread enabled via \fBCI_OPT_EVENT_THREAD\fP passed to
+\fBci_init_options\fP.  This assumes integrators already have their own
+event loop handling event notifications for various file descriptors and
+wish to do the same with their integration with c-ci.
+
+The \fBci_process_fds(3)\fP function handles input/output events on file
+descriptors and timeouts associated with queries pending on the channel
+identified by \fIchannel\fP.  The file descriptors to be processed are passed
+in an array of \fIci_fd_events_t\fP data structures in the \fIfd\fP member,
+and events are a bitwise mask of \fIci_fd_eventflag_t\fP in the \fIevent\fP
+member.  This function can also be used to process timeouts by passing NULL
+to the \fIevents\fP member with \fInevents\fP value of 0.  Flags may also be
+specified in the \fIflags\fP field and are defined in \fBci_process_flag_t\fP.
+
+\fBCI_PROCESS_FLAG_SKIP_NON_FD\fP can be specified to specifically skip any
+processing unrelated to the file descriptor events passed in, examples include
+timeout processing and cleanup handling.  This is useful if an integrator
+knows they will be sending multiple \fIci_process_fds(3)\fP requests and
+wants to skip that extra processing.  However, the integrator must send the
+final request with the flag so that timeout and other processing gets performed
+before their event loop waits on additional events.
+
+It is allowable to use an \fIci_fd_events_t\fP with \fIevents\fP member of
+value \fICI_FD_EVENT_NONE\fP (0) if there are no events for a given file
+descriptor if an integrator wishes to simply maintain an array with all
+possible file descriptors and update readiness via the \fIevent\fP member.
+
+This function will return \fICI_ENOMEM\fP in out of memory conditions,
+otherwise will return \fICI_SUCCESS\fP.
+
+This function is recommended over \fBci_process_fd(3)\fP since it can
+handle processing of multiple file descriptors at once, thus skipping repeating
+additional logic such as timeout processing which would be required if calling
+\fBci_process_fd(3)\fP for multiple file descriptors notified at the same
+time.
+
+This function is typically used with the \fICI_OPT_SOCK_STATE_CB\fP option.
+
+\fBci_timeout(3)\fP should be used to retrieve the desired timeout, and when
+the timeout expires, the integrator must call \fBci_process_fds(3)\fP with
+a NULL \fIevents\fP array. (or \fBci_process_fd(3)\fP with both sockets set
+to \fICI_SOCKET_BAD\fP). There is no need to do this if events are also
+delivered for any file descriptors as timeout processing will automatically be
+handled by any call to \fBci_process_fds(3)\fP or \fBci_process_fd(3)\fP.
+
+The \fBci_process_fd(3)\fP function is the same as \fBci_process_fds(3)\fP
+except can only process a single read and write file descriptor at a time.
+New integrators should use \fBci_process_fds(3)\fP if possible.
+
+The \fBci_process(3)\fP function works in the same manner, except it works
+on \fIfd_sets\fP as is used by \fBselect(3)\fP and retrieved by
+\fBci_fds(3)\fP.  This method is deprecated and should not be used in modern
+applications due to known limitations to the \fBselect(3)\fP implementation.
+
+.SH AVAILABILITY
+\fBci_process_fds(3)\fP was introduced in c-ci 1.34.0.
+
+.SH SEE ALSO
+.BR ci_fds (3),
+.BR ci_timeout (3),
+.BR ci_init_options (3)
+with \fICI_OPT_EVENT_THREAD\fP or \fICI_OPT_SOCK_STATE_CB\fP

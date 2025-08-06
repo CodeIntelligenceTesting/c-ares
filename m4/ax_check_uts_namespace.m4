@@ -11,7 +11,7 @@
 #   can enter the namespace.
 #   If so, it calls AC_DEFINE(HAVE_UTS_NAMESPACE).
 #
-# Copyright (C) The c-ares team
+# Copyright (C) The c-ci team
 # SPDX-License-Identifier: MIT
 
 AC_DEFUN([AX_CHECK_UTS_NAMESPACE],[dnl

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 set -e -x -o pipefail
 
@@ -28,7 +28,7 @@ if [ "$BUILD_TYPE" = "autotools" -o "$BUILD_TYPE" = "coverage" ]; then
     else
         TOOLSBIN="${PWD}/atoolsbld/src/tools/"
     fi
-    if [ -f "${PWD}/atoolsbld/test/.libs/arestest" ] ; then
+    if [ -f "${PWD}/atoolsbld/test/.libs/citest" ] ; then
         TESTSBIN="${PWD}/atoolsbld/test/.libs/"
     else
         TESTSBIN="${PWD}/atoolsbld/test/"
@@ -45,22 +45,22 @@ $TEST_WRAP "${TOOLSBIN}/ahost" www.google.com
 cd "${TESTSBIN}"
 
 if [ "$TEST_WRAP" != "" ] ; then
-  $TEST_WRAP ./arestest $TEST_FILTER
+  $TEST_WRAP ./citest $TEST_FILTER
 elif [ "$TEST_DEBUGGER" = "gdb" ] ; then
-  gdb --batch --batch-silent --return-child-result -ex "handle SIGPIPE nostop noprint pass" -ex "run" -ex "thread apply all bt" -ex "quit" --args ./arestest $TEST_FILTER
+  gdb --batch --batch-silent --return-child-result -ex "handle SIGPIPE nostop noprint pass" -ex "run" -ex "thread apply all bt" -ex "quit" --args ./citest $TEST_FILTER
 elif [ "$TEST_DEBUGGER" = "lldb" ] ; then
   # LLDB won't return the exit code of the child process, so we need to extract it from the test output and verify it.
-  lldb --batch -o "settings set target.process.extra-startup-command 'process handle SIGPIPE -n true -p true -s false'" -o "process launch --shell-expand-args 0" -k "thread backtrace all" -k "quit 1" -- ./arestest $TEST_FILTER 2>&1 | tee test_output.txt
+  lldb --batch -o "settings set target.process.extra-startup-command 'process handle SIGPIPE -n true -p true -s false'" -o "process launch --shell-expand-args 0" -k "thread backtrace all" -k "quit 1" -- ./citest $TEST_FILTER 2>&1 | tee test_output.txt
   exit_code=`grep "Process [0-9]* exited with status = [0-9]* (.*)" test_output.txt | sed 's/.* = \([0-9]*\).*/\1/'`
   echo "Test Exit Code: ${exit_code}"
   if [ "${exit_code}" != "0" ] ; then
     exit 1
   fi
 else
-  ./arestest $TEST_FILTER
+  ./citest $TEST_FILTER
 fi
 
-./aresfuzz ${TESTDIR}/fuzzinput/*
-./aresfuzzname ${TESTDIR}/fuzznames/*
+./cifuzz ${TESTDIR}/fuzzinput/*
+./cifuzzname ${TESTDIR}/fuzznames/*
 ./dnsdump "${TESTDIR}/fuzzinput/answer_a" "${TESTDIR}/fuzzinput/answer_aaaa"
 cd "${PWD}"

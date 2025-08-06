@@ -1,6 +1,6 @@
 /* MIT License
  *
- * Copyright (c) The c-ares project and its contributors
+ * Copyright (c) The c-ci project and its contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,12 @@
  *
  * SPDX-License-Identifier: MIT
  */
-#include "ares-test.h"
+#include "ci-test.h"
 #include "dns-proto.h"
 
 #include <vector>
 
-namespace ares {
+namespace ci {
 namespace test {
 
 TEST(DNSProto, EncodeQuestions) {
@@ -153,4 +153,4 @@ TEST(DNSProto, EncodeAddressAnswers) {
 
 
 }  // namespace test
-}  // namespace ares
+}  // namespace ci

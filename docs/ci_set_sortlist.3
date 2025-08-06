@@ -1,0 +1,49 @@
+.\"
+.\" Copyright (C) Daniel Stenberg
+.\" SPDX-License-Identifier: MIT
+.\"
+.TH CI_SET_SORTLIST 3 "23 November 2015"
+.SH NAME
+ci_set_sortlist \- Initialize an ci_channel_t *sortlist configuration
+.SH SYNOPSIS
+.nf
+#include <ci.h>
+
+int ci_set_sortlist(ci_channel_t *\fIchannel\fP, const char *\fIsortstr\fP)
+.fi
+.SH DESCRIPTION
+The \fBci_set_sortlist(3)\fP function initializes an address sortlist configuration
+for the channel data identified by
+.IR channel ,
+so that addresses returned by \fBci_gethostbyname(3)\fP are sorted according to the
+sortlist.  The provided
+.IR sortstr
+string that holds a space separated list of IP-address-netmask pairs.  The
+netmask is optional but follows the address after a slash if present.  For example,
+"130.155.160.0/255.255.240.0 130.155.0.0".
+
+This function replaces any potentially previously configured address sortlist
+with the ones given in the configuration string.
+
+.SH RETURN VALUES
+.B ci_set_sortlist(3)
+may return any of the following values:
+.TP 15
+.B CI_SUCCESS
+The sortlist configuration was successfully initialized.
+.TP 15
+.B CI_ENOMEM
+The process's available memory was exhausted.
+.TP 15
+.B CI_ENODATA
+The channel data identified by
+.IR channel
+was invalid.
+.TP 15
+.B CI_ENOTINITIALIZED
+c-ci library initialization not yet performed.
+.SH SEE ALSO
+.BR ci_init_options (3),
+.BR ci_dup (3)
+.SH AVAILABILITY
+ci_set_sortlist(3) was added in c-ci 1.11.0

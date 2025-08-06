@@ -1,4 +1,4 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 AUTOMAKE_OPTIONS = foreign subdir-objects nostdinc 1.9.6
 PROGS = ahost adig
@@ -17,13 +17,13 @@ AM_CPPFLAGS += -I$(top_builddir)/include \
                -I$(top_srcdir)/include \
                -I$(top_srcdir)/src/lib \
                -I$(top_srcdir)/src/lib/include \
-               -DCARES_NO_DEPRECATED
+               -DCI_NO_DEPRECATED
 
 include Makefile.inc
 
 # We're not interested in code coverage of the test apps themselves, but need
 # to link with gcov if building with code coverage enabled
-LDADD = $(top_builddir)/src/lib/libcares.la $(CODE_COVERAGE_LIBS)
+LDADD = $(top_builddir)/src/lib/libcci.la $(CODE_COVERAGE_LIBS)
 
 ahost_SOURCES = ahost.c $(SAMPLESOURCES) $(SAMPLEHEADERS)
 ahost_CFLAGS = $(AM_CFLAGS)

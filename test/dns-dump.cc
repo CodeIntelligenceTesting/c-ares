@@ -1,6 +1,6 @@
 /* MIT License
  *
- * Copyright (c) The c-ares project and its contributors
+ * Copyright (c) The c-ci project and its contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@
 
 #include "dns-proto.h"
 
-namespace ares {
+namespace ci {
 
 static void ShowFile(const char* filename) {
   int fd = open(filename, O_RDONLY);
@@ -47,18 +47,18 @@ static void ShowFile(const char* filename) {
   std::vector<unsigned char> contents;
   while (true) {
     unsigned char buffer[1024];
-    ares_ssize_t len = read(fd, buffer, sizeof(buffer));
+    ci_ssize_t len = read(fd, buffer, sizeof(buffer));
     if (len <= 0) break;
     contents.insert(contents.end(), buffer, buffer + len);
   }
   std::cout << PacketToString(contents) << std::endl;
 }
 
-}  // namespace ares
+}  // namespace ci
 
 int main(int argc, char* argv[]) {
   for (int ii = 1; ii < argc; ++ii) {
-    ares::ShowFile(argv[ii]);
+    ci::ShowFile(argv[ii]);
   }
   return 0;
 }

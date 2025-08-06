@@ -1,4 +1,4 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 name: Android
 on:
@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CMAKE_DEFAULT_FLAGS: "-DCMAKE_BUILD_TYPE=DEBUG -DCARES_STATIC=ON -DCARES_STATIC_PIC=ON -G Ninja -DANDROID_PLATFORM=android-23"
+  CMAKE_DEFAULT_FLAGS: "-DCMAKE_BUILD_TYPE=DEBUG -DCI_STATIC=ON -DCI_STATIC_PIC=ON -G Ninja -DANDROID_PLATFORM=android-23"
   MAKE: make
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
         with:
           packages: cmake ninja-build autoconf automake libtool pkg-config
           version: 1.0
-      - name: Checkout c-ares
+      - name: Checkout c-ci
         uses: actions/checkout@v4
       - name: Setup NDK
         uses: nttld/setup-ndk@v1
@@ -31,31 +31,31 @@ jobs:
         with:
           ndk-version: r21e
           add-to-path: false
-      - name: "CMake: armeabi-v7a build c-ares"
+      - name: "CMake: armeabi-v7a build c-ci"
         env:
           BUILD_TYPE: CMAKE
           CMAKE_FLAGS: "${{ env.CMAKE_DEFAULT_FLAGS }} -DANDROID_ABI=armeabi-v7a -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup-ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake"
         run: |
           ./ci/build.sh
-      - name: "CMake: arm64-v8a build c-ares"
+      - name: "CMake: arm64-v8a build c-ci"
         env:
           BUILD_TYPE: CMAKE
           CMAKE_FLAGS: "${{ env.CMAKE_DEFAULT_FLAGS }} -DANDROID_ABI=arm64-v8a -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup-ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake"
         run: |
           ./ci/build.sh
-      - name: "CMake: x86 build c-ares"
+      - name: "CMake: x86 build c-ci"
         env:
           BUILD_TYPE: CMAKE
           CMAKE_FLAGS: "${{ env.CMAKE_DEFAULT_FLAGS }} -DANDROID_ABI=x86 -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup-ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake"
         run: |
           ./ci/build.sh
-      - name: "CMake: x86_64 build c-ares"
+      - name: "CMake: x86_64 build c-ci"
         env:
           BUILD_TYPE: CMAKE
           CMAKE_FLAGS: "${{ env.CMAKE_DEFAULT_FLAGS }} -DANDROID_ABI=x86_64 -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup-ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake"
         run: |
           ./ci/build.sh
-      - name: "Autotools: aarch64 build c-ares"
+      - name: "Autotools: aarch64 build c-ci"
         env:
           BUILD_TYPE: autotools
           TOOLCHAIN: "${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64"

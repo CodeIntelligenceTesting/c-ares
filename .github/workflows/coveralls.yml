@@ -1,4 +1,4 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 name: Coveralls
 on:
@@ -19,13 +19,13 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=DEBUG -DCARES_BUILD_CONTAINER_TESTS=ON -DCARES_COVERAGE=ON -DCARES_BUILD_TOOLS=OFF -G Ninja ..
+          cmake -DCMAKE_BUILD_TYPE=DEBUG -DCI_BUILD_CONTAINER_TESTS=ON -DCI_COVERAGE=ON -DCI_BUILD_TOOLS=OFF -G Ninja ..
           ninja
       - name: Test
         shell: bash
         run: |
           cd build
-          ./bin/arestest -v --gtest_filter='-*LiveSearchTXT*:*LiveSearchANY*:*LiveSearchNS*'
+          ./bin/citest -v --gtest_filter='-*LiveSearchTXT*:*LiveSearchANY*:*LiveSearchNS*'
       - name: Generate Coverage
         shell: bash
         run: |
@@ -34,5 +34,5 @@ jobs:
       - name: Upload to Coveralls
         uses: coverallsapp/github-action@master
         with:
-          path-to-lcov: ${{runner.workspace}}/c-ares/build/coverage.info
+          path-to-lcov: ${{runner.workspace}}/c-ci/build/coverage.info
           github-token: ${{ secrets.GITHUB_TOKEN }}

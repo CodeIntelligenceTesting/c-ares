@@ -1,4 +1,4 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 
 # Get rid of: warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
@@ -23,11 +23,11 @@ ELSE ()
   ENDIF()
 ENDIF()
 
-# create target to access and use internal cares library
-add_library(caresinternal INTERFACE)
-target_compile_definitions(caresinternal INTERFACE HAVE_CONFIG_H=1)
+# create target to access and use internal cci library
+add_library(cciinternal INTERFACE)
+target_compile_definitions(cciinternal INTERFACE HAVE_CONFIG_H=1)
 
-target_include_directories(caresinternal
+target_include_directories(cciinternal
    INTERFACE "${PROJECT_BINARY_DIR}"
              "${PROJECT_BINARY_DIR}/src/lib"
              "${PROJECT_SOURCE_DIR}"
@@ -36,80 +36,80 @@ target_include_directories(caresinternal
              "${PROJECT_SOURCE_DIR}/include"
 )
 
-IF (CARES_STATIC)
-  target_link_libraries(caresinternal INTERFACE ${PROJECT_NAME}::cares_static)
+IF (CI_STATIC)
+  target_link_libraries(cciinternal INTERFACE ${PROJECT_NAME}::cci_static)
 ELSE ()
-  target_link_libraries(caresinternal INTERFACE ${PROJECT_NAME}::cares)
+  target_link_libraries(cciinternal INTERFACE ${PROJECT_NAME}::cci)
 ENDIF ()
 
 transform_makefile_inc("Makefile.inc" "${CMAKE_CURRENT_BINARY_DIR}/Makefile.inc.cmake")
 include(${CMAKE_CURRENT_BINARY_DIR}/Makefile.inc.cmake)
 
-add_executable(arestest ${TESTSOURCES} ${TESTHEADERS})
-target_include_directories(arestest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+add_executable(citest ${TESTSOURCES} ${TESTHEADERS})
+target_include_directories(citest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 IF (CMAKE_VERSION VERSION_LESS "3.23.0")
   FIND_LIBRARY(LIBGMOCK NAMES gmock PATHS ${GTEST_ROOT} PATH_SUFFIXES lib)
   IF (LIBGMOCK-NOTFOUND)
     MESSAGE(FATAL_ERROR "Could not find Gmock")
   ENDIF ()
-  target_link_libraries(arestest PRIVATE caresinternal GTest::GTest ${LIBGMOCK})
+  target_link_libraries(citest PRIVATE cciinternal GTest::GTest ${LIBGMOCK})
 ELSE ()
-  target_link_libraries(arestest PRIVATE caresinternal GTest::gmock)
+  target_link_libraries(citest PRIVATE cciinternal GTest::gmock)
 ENDIF()
-target_compile_definitions(arestest PRIVATE CARES_NO_DEPRECATED)
+target_compile_definitions(citest PRIVATE CI_NO_DEPRECATED)
 
-IF (CARES_BUILD_CONTAINER_TESTS)
-  target_compile_definitions(arestest PRIVATE HAVE_USER_NAMESPACE HAVE_UTS_NAMESPACE)
+IF (CI_BUILD_CONTAINER_TESTS)
+  target_compile_definitions(citest PRIVATE HAVE_USER_NAMESPACE HAVE_UTS_NAMESPACE)
 ENDIF ()
 # Avoid "fatal error C1041: cannot open program database" due to multiple
 # targets trying to use the same PDB.  /FS does NOT resolve this issue.
-set_target_properties(arestest PROPERTIES COMPILE_PDB_NAME arestest.pdb)
+set_target_properties(citest PROPERTIES COMPILE_PDB_NAME citest.pdb)
 
-add_executable(aresfuzz ${FUZZSOURCES})
-target_compile_definitions(aresfuzz PRIVATE CARES_NO_DEPRECATED)
-target_link_libraries(aresfuzz PRIVATE caresinternal)
+add_executable(cifuzz ${FUZZSOURCES})
+target_compile_definitions(cifuzz PRIVATE CI_NO_DEPRECATED)
+target_link_libraries(cifuzz PRIVATE cciinternal)
 # Avoid "fatal error C1041: cannot open program database" due to multiple
 # targets trying to use the same PDB.  /FS does NOT resolve this issue.
-set_target_properties(aresfuzz PROPERTIES COMPILE_PDB_NAME aresfuzz.pdb)
+set_target_properties(cifuzz PROPERTIES COMPILE_PDB_NAME cifuzz.pdb)
 
-add_executable(aresfuzzname ${FUZZNAMESOURCES})
-target_compile_definitions(aresfuzzname PRIVATE CARES_NO_DEPRECATED)
-target_link_libraries(aresfuzzname PRIVATE caresinternal)
+add_executable(cifuzzname ${FUZZNAMESOURCES})
+target_compile_definitions(cifuzzname PRIVATE CI_NO_DEPRECATED)
+target_link_libraries(cifuzzname PRIVATE cciinternal)
 # Avoid "fatal error C1041: cannot open program database" due to multiple
 # targets trying to use the same PDB.  /FS does NOT resolve this issue.
-set_target_properties(aresfuzzname PROPERTIES COMPILE_PDB_NAME aresfuzzname.pdb)
+set_target_properties(cifuzzname PROPERTIES COMPILE_PDB_NAME cifuzzname.pdb)
 
 add_executable(dnsdump ${DUMPSOURCES})
-target_compile_definitions(dnsdump PRIVATE CARES_NO_DEPRECATED)
-target_link_libraries(dnsdump PRIVATE caresinternal)
+target_compile_definitions(dnsdump PRIVATE CI_NO_DEPRECATED)
+target_link_libraries(dnsdump PRIVATE cciinternal)
 # Avoid "fatal error C1041: cannot open program database" due to multiple
 # targets trying to use the same PDB.  /FS does NOT resolve this issue.
 set_target_properties(dnsdump PROPERTIES COMPILE_PDB_NAME dnsdump.pdb)
 
-add_executable(ares_queryloop ${LOOPSOURCES})
-target_compile_definitions(ares_queryloop PRIVATE CARES_NO_DEPRECATED)
-target_link_libraries(ares_queryloop PRIVATE caresinternal)
+add_executable(ci_queryloop ${LOOPSOURCES})
+target_compile_definitions(ci_queryloop PRIVATE CI_NO_DEPRECATED)
+target_link_libraries(ci_queryloop PRIVATE cciinternal)
 # Avoid "fatal error C1041: cannot open program database" due to multiple
 # targets trying to use the same PDB.  /FS does NOT resolve this issue.
-set_target_properties(ares_queryloop PROPERTIES COMPILE_PDB_NAME ares_queryloop.pdb)
+set_target_properties(ci_queryloop PROPERTIES COMPILE_PDB_NAME ci_queryloop.pdb)
 
 
 
 
 # register tests
 
-add_test(NAME arestest COMMAND $<TARGET_FILE:arestest>)
+add_test(NAME citest COMMAND $<TARGET_FILE:citest>)
 
 file(GLOB_RECURSE FUZZINPUT_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/fuzzinput" "fuzzinput/*")
 add_test(
-  NAME aresfuzz
+  NAME cifuzz
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/fuzzinput"
-  COMMAND $<TARGET_FILE:aresfuzz> ${FUZZINPUT_FILES}
+  COMMAND $<TARGET_FILE:cifuzz> ${FUZZINPUT_FILES}
 )
 
 file(GLOB_RECURSE FUZZNAMES_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/fuzznames" "fuzznames/*")
 add_test(
-  NAME aresfuzzname
+  NAME cifuzzname
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/fuzznames"
-  COMMAND $<TARGET_FILE:aresfuzzname> ${FUZZNAMES_FILES}
+  COMMAND $<TARGET_FILE:cifuzzname> ${FUZZNAMES_FILES}
 )

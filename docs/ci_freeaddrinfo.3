@@ -1,0 +1,22 @@
+.\"
+.\" Copyright 1998 by the Massachusetts Institute of Technology.
+.\" SPDX-License-Identifier: MIT
+.\"
+.TH CI_FREEADDRINFO 3 "31 October 2018"
+.SH NAME
+ci_freeaddrinfo \- Free addrinfo structure allocated by ci functions
+.SH SYNOPSIS
+.nf
+#include <ci.h>
+
+void ci_freeaddrinfo(struct ci_addrinfo *\fIai\fP)
+.fi
+.SH DESCRIPTION
+The
+.B ci_freeaddrinfo
+function frees a
+.B struct ci_addrinfo
+returned in \fIresult\fP of
+.B ci_addrinfo_callback
+.SH SEE ALSO
+.BR ci_getaddrinfo (3),

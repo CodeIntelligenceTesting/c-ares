@@ -17,17 +17,17 @@
 
 # ------------------------------------------------------------------------------
 #
-# Makefile for building c-ares libraries and sample programs with MSVC.
+# Makefile for building c-ci libraries and sample programs with MSVC.
 #
 # Usage: nmake /f makefile.msvc CFG=<config> <target>
 #
 # <config> must be one of: [ lib-release | lib-debug | dll-release | dll-debug }
-# <target> must be one of: [ ALL | c-ares | adig | ahost | clean }
+# <target> must be one of: [ ALL | c-ci | adig | ahost | clean }
 #
 # If a <target> other than ALL or clean is given, <config> becomes mandatory.
 #
 # If neither <config> nor <target> are specified this results in
-# all targets being built for all <config> c-ares library types.
+# all targets being built for all <config> c-ci library types.
 #
 # This makefile must be processed from the subdir where it is located.
 #
@@ -35,10 +35,10 @@
 #
 # ------------------------------------------------------------------------------
 
-NAME = cares
+NAME = cci
 
 # ------------------------------------------------
-# c-ares static and dynamic libraries common base
+# c-ci static and dynamic libraries common base
 # file names for release and debug configurations
 # ------------------------------------------------
 
@@ -48,7 +48,7 @@ STA_LIB_DBG = $(STA_LIB_REL)d
 DYN_LIB_DBG = $(DYN_LIB_REL)d
 
 # -------------------------------------------
-# Base names for c-ares DLL import libraries
+# Base names for c-ci DLL import libraries
 # -------------------------------------------
 
 IMP_LIB_REL = $(DYN_LIB_REL)
@@ -76,11 +76,11 @@ USE_WATT32 = 0
 !ENDIF
 
 # ----------------------------------------------------
-# Verify that current subdir is the c-ares source one
+# Verify that current subdir is the c-ci source one
 # ----------------------------------------------------
 
-!IF ! EXIST(.\src\lib\ares_init.c)
-!  MESSAGE Can not process Makefile.msvc from outside of c-ares source subdirectory.
+!IF ! EXIST(.\src\lib\ci_init.c)
+!  MESSAGE Can not process Makefile.msvc from outside of c-ci source subdirectory.
 !  MESSAGE Change to the subdirectory where Makefile.msvc is found, and try again.
 !  ERROR   See previous message.
 !ENDIF
@@ -124,17 +124,17 @@ VALID_CFGSET = TRUE
 !ENDIF
 
 !IF "$(VALID_CFGSET)" == "FALSE" && "$(CFG)" != ""
-!  MESSAGE MSVC c-ares makefile
+!  MESSAGE MSVC c-ci makefile
 !  MESSAGE
 !  MESSAGE Usage: nmake /f makefile.msvc CFG=<config> <target>
 !  MESSAGE
 !  MESSAGE <config> must be one of: [ lib-release | lib-debug | dll-release | dll-debug }
-!  MESSAGE <target> must be one of: [ ALL | c-ares | adig | ahost | clean }
+!  MESSAGE <target> must be one of: [ ALL | c-ci | adig | ahost | clean }
 !  MESSAGE
 !  MESSAGE If a <target> other than ALL or clean is given, <config> becomes mandatory.
 !  MESSAGE
 !  MESSAGE If neither <config> nor <target> are specified this results in
-!  MESSAGE all targets being built for all <config> c-ares library types.
+!  MESSAGE all targets being built for all <config> c-ci library types.
 !  MESSAGE
 !  ERROR Choose a valid configuration.
 !ENDIF
@@ -143,7 +143,7 @@ VALID_CFGSET = TRUE
 # Project subdirs independent of configuration being used
 # --------------------------------------------------------
 
-CARES_DIR = $(BASE_DIR)\cares
+CI_DIR = $(BASE_DIR)\cci
 PROG2_DIR = $(BASE_DIR)\adig
 PROG3_DIR = $(BASE_DIR)\ahost
 
@@ -153,17 +153,17 @@ PROG3_DIR = $(BASE_DIR)\ahost
 # ---------------------------------------------------
 
 !IF "$(VALID_CFGSET)" == "TRUE"
-CARES_OUTDIR = $(CARES_DIR)\$(CFG)
+CI_OUTDIR = $(CI_DIR)\$(CFG)
 PROG2_OUTDIR = $(PROG2_DIR)\$(CFG)
 PROG3_OUTDIR = $(PROG3_DIR)\$(CFG)
-CARES_OBJDIR = $(CARES_OUTDIR)\obj
+CI_OBJDIR = $(CI_OUTDIR)\obj
 PROG2_OBJDIR = $(PROG2_OUTDIR)\obj
 PROG3_OBJDIR = $(PROG3_OUTDIR)\obj
 !ELSE
-!UNDEF CARES_OUTDIR
+!UNDEF CI_OUTDIR
 !UNDEF PROG2_OUTDIR
 !UNDEF PROG3_OUTDIR
-!UNDEF CARES_OBJDIR
+!UNDEF CI_OBJDIR
 !UNDEF PROG2_OBJDIR
 !UNDEF PROG3_OBJDIR
 !ENDIF
@@ -209,34 +209,34 @@ LINK_CMD_EXE_DBG = $(LINK_CMD_EXE) /debug
 # ---------------------------------
 
 !IF "$(CFG)" == "lib-release"
-CARES_TARGET = $(STA_LIB_REL).lib
-CARES_CFLAGS = /DCARES_BUILDING_LIBRARY /DCARES_STATICLIB
-CARES_LFLAGS =
-SPROG_CFLAGS = /DCARES_STATICLIB /DCARES_NO_DEPRECATED
-SPROG_LFLAGS = /libpath:$(CARES_OUTDIR) $(EX_LIBS_REL) $(STA_LIB_REL).lib
-CARES_LINK   = $(LINK_CMD_LIB)
+CI_TARGET = $(STA_LIB_REL).lib
+CI_CFLAGS = /DCI_BUILDING_LIBRARY /DCI_STATICLIB
+CI_LFLAGS =
+SPROG_CFLAGS = /DCI_STATICLIB /DCI_NO_DEPRECATED
+SPROG_LFLAGS = /libpath:$(CI_OUTDIR) $(EX_LIBS_REL) $(STA_LIB_REL).lib
+CI_LINK   = $(LINK_CMD_LIB)
 SPROG_LINK   = $(LINK_CMD_EXE_REL)
 CC_CMD       = $(CC_CMD_REL)
 !ENDIF
 
 !IF "$(CFG)" == "lib-debug"
-CARES_TARGET = $(STA_LIB_DBG).lib
-CARES_CFLAGS = /DCARES_BUILDING_LIBRARY /DCARES_STATICLIB /DDEBUGBUILD
-CARES_LFLAGS =
-SPROG_CFLAGS = /DCARES_STATICLIB /DCARES_NO_DEPRECATED
-SPROG_LFLAGS = /libpath:$(CARES_OUTDIR) $(EX_LIBS_DBG) $(STA_LIB_DBG).lib
-CARES_LINK   = $(LINK_CMD_LIB)
+CI_TARGET = $(STA_LIB_DBG).lib
+CI_CFLAGS = /DCI_BUILDING_LIBRARY /DCI_STATICLIB /DDEBUGBUILD
+CI_LFLAGS =
+SPROG_CFLAGS = /DCI_STATICLIB /DCI_NO_DEPRECATED
+SPROG_LFLAGS = /libpath:$(CI_OUTDIR) $(EX_LIBS_DBG) $(STA_LIB_DBG).lib
+CI_LINK   = $(LINK_CMD_LIB)
 SPROG_LINK   = $(LINK_CMD_EXE_DBG)
 CC_CMD       = $(CC_CMD_DBG)
 !ENDIF
 
 !IF "$(CFG)" == "dll-release"
-CARES_TARGET = $(DYN_LIB_REL).dll
-CARES_CFLAGS = /DCARES_BUILDING_LIBRARY
-CARES_LFLAGS = /release $(EX_LIBS_REL) /implib:$(CARES_OUTDIR)\$(IMP_LIB_REL).lib
-SPROG_CFLAGS = /DCARES_NO_DEPRECATED
-SPROG_LFLAGS = /libpath:$(CARES_OUTDIR) $(EX_LIBS_REL) $(IMP_LIB_REL).lib
-CARES_LINK   = $(LINK_CMD_DLL)
+CI_TARGET = $(DYN_LIB_REL).dll
+CI_CFLAGS = /DCI_BUILDING_LIBRARY
+CI_LFLAGS = /release $(EX_LIBS_REL) /implib:$(CI_OUTDIR)\$(IMP_LIB_REL).lib
+SPROG_CFLAGS = /DCI_NO_DEPRECATED
+SPROG_LFLAGS = /libpath:$(CI_OUTDIR) $(EX_LIBS_REL) $(IMP_LIB_REL).lib
+CI_LINK   = $(LINK_CMD_DLL)
 SPROG_LINK   = $(LINK_CMD_EXE_REL)
 CC_CMD       = $(CC_CMD_REL)
 USE_RES_FILE = TRUE
@@ -244,12 +244,12 @@ RC_CMD       = $(RC_CMD_REL)
 !ENDIF
 
 !IF "$(CFG)" == "dll-debug"
-CARES_TARGET = $(DYN_LIB_DBG).dll
-CARES_CFLAGS = /DCARES_BUILDING_LIBRARY /DDEBUGBUILD
-CARES_LFLAGS = /debug $(EX_LIBS_DBG) /implib:$(CARES_OUTDIR)\$(IMP_LIB_DBG).lib /pdb:$(CARES_OUTDIR)\$(DYN_LIB_DBG).pdb
-SPROG_CFLAGS = /DCARES_NO_DEPRECATED
-SPROG_LFLAGS = /libpath:$(CARES_OUTDIR) $(EX_LIBS_DBG) $(IMP_LIB_DBG).lib
-CARES_LINK   = $(LINK_CMD_DLL)
+CI_TARGET = $(DYN_LIB_DBG).dll
+CI_CFLAGS = /DCI_BUILDING_LIBRARY /DDEBUGBUILD
+CI_LFLAGS = /debug $(EX_LIBS_DBG) /implib:$(CI_OUTDIR)\$(IMP_LIB_DBG).lib /pdb:$(CI_OUTDIR)\$(DYN_LIB_DBG).pdb
+SPROG_CFLAGS = /DCI_NO_DEPRECATED
+SPROG_LFLAGS = /libpath:$(CI_OUTDIR) $(EX_LIBS_DBG) $(IMP_LIB_DBG).lib
+CI_LINK   = $(LINK_CMD_DLL)
 SPROG_LINK   = $(LINK_CMD_EXE_DBG)
 CC_CMD       = $(CC_CMD_DBG)
 USE_RES_FILE = TRUE
@@ -269,17 +269,17 @@ RC_CMD       = $(RC_CMD_DBG)
 
 !IF "$(VALID_CFGSET)" == "TRUE"
 
-!IF [ECHO CARES_OBJS=^$(CARES_OBJDIR)\$(CSOURCES: = $(CARES_OBJDIR^)\) > .\cares_objs.inc] == 0
-!INCLUDE .\cares_objs.inc
-!IF [DEL .\cares_objs.inc]
+!IF [ECHO CI_OBJS=^$(CI_OBJDIR)\$(CSOURCES: = $(CI_OBJDIR^)\) > .\cci_objs.inc] == 0
+!INCLUDE .\cci_objs.inc
+!IF [DEL .\cci_objs.inc]
 !ENDIF
 !ELSE
-!ERROR Problem generating CARES_OBJS list.
+!ERROR Problem generating CI_OBJS list.
 !ENDIF
-CARES_OBJS = $(CARES_OBJS:.c=.obj)
-CARES_OBJS = $(CARES_OBJS:/=\)
+CI_OBJS = $(CI_OBJS:.c=.obj)
+CI_OBJS = $(CI_OBJS:/=\)
 !IF "$(USE_RES_FILE)" == "TRUE"
-CARES_OBJS = $(CARES_OBJS) $(CARES_OBJDIR)\cares.res
+CI_OBJS = $(CI_OBJS) $(CI_OBJDIR)\cci.res
 !ENDIF
 
 !IF [ECHO PROG2_OBJS=^$(PROG2_OBJDIR)\$(SAMPLESOURCES: = $(PROG2_OBJDIR^)\) > .\prog2_objs.inc] == 0
@@ -314,29 +314,29 @@ PROG3_OBJS = $(PROG3_OBJS) $(PROG3_OBJDIR)\ahost.obj
 .SUFFIXES:
 .SUFFIXES: .c .rc
 
-{$(SRCDIR)\src\lib}.rc{$(CARES_OBJDIR)}.res:
+{$(SRCDIR)\src\lib}.rc{$(CI_OBJDIR)}.res:
     $(RC_CMD) /Fo $@ $<
 
-{$(SRCDIR)\src\lib}.c{$(CARES_OBJDIR)}.obj:
-    $(CC_CMD) $(CC_CFLAGS) $(CARES_CFLAGS) /Fo$@ /Fd$(@D)\ /c $<
+{$(SRCDIR)\src\lib}.c{$(CI_OBJDIR)}.obj:
+    $(CC_CMD) $(CC_CFLAGS) $(CI_CFLAGS) /Fo$@ /Fd$(@D)\ /c $<
 
-{$(SRCDIR)\src\lib\dsa}.c{$(CARES_OBJDIR)\dsa}.obj:
-    $(CC_CMD) $(CC_CFLAGS) $(CARES_CFLAGS) /Fo$@ /Fd$(@D)\ /c $<
+{$(SRCDIR)\src\lib\dsa}.c{$(CI_OBJDIR)\dsa}.obj:
+    $(CC_CMD) $(CC_CFLAGS) $(CI_CFLAGS) /Fo$@ /Fd$(@D)\ /c $<
 
-{$(SRCDIR)\src\lib\event}.c{$(CARES_OBJDIR)\event}.obj:
-    $(CC_CMD) $(CC_CFLAGS) $(CARES_CFLAGS) /Fo$@ /Fd$(@D)\ /c $<
+{$(SRCDIR)\src\lib\event}.c{$(CI_OBJDIR)\event}.obj:
+    $(CC_CMD) $(CC_CFLAGS) $(CI_CFLAGS) /Fo$@ /Fd$(@D)\ /c $<
 
-{$(SRCDIR)\src\lib\legacy}.c{$(CARES_OBJDIR)\legacy}.obj:
-    $(CC_CMD) $(CC_CFLAGS) $(CARES_CFLAGS) /Fo$@ /Fd$(@D)\ /c $<
+{$(SRCDIR)\src\lib\legacy}.c{$(CI_OBJDIR)\legacy}.obj:
+    $(CC_CMD) $(CC_CFLAGS) $(CI_CFLAGS) /Fo$@ /Fd$(@D)\ /c $<
 
-{$(SRCDIR)\src\lib\record}.c{$(CARES_OBJDIR)\record}.obj:
-    $(CC_CMD) $(CC_CFLAGS) $(CARES_CFLAGS) /Fo$@ /Fd$(@D)\ /c $<
+{$(SRCDIR)\src\lib\record}.c{$(CI_OBJDIR)\record}.obj:
+    $(CC_CMD) $(CC_CFLAGS) $(CI_CFLAGS) /Fo$@ /Fd$(@D)\ /c $<
 
-{$(SRCDIR)\src\lib\str}.c{$(CARES_OBJDIR)\str}.obj:
-    $(CC_CMD) $(CC_CFLAGS) $(CARES_CFLAGS) /Fo$@ /Fd$(@D)\ /c $<
+{$(SRCDIR)\src\lib\str}.c{$(CI_OBJDIR)\str}.obj:
+    $(CC_CMD) $(CC_CFLAGS) $(CI_CFLAGS) /Fo$@ /Fd$(@D)\ /c $<
 
-{$(SRCDIR)\src\lib\util}.c{$(CARES_OBJDIR)\util}.obj:
-    $(CC_CMD) $(CC_CFLAGS) $(CARES_CFLAGS) /Fo$@ /Fd$(@D)\ /c $<
+{$(SRCDIR)\src\lib\util}.c{$(CI_OBJDIR)\util}.obj:
+    $(CC_CMD) $(CC_CFLAGS) $(CI_CFLAGS) /Fo$@ /Fd$(@D)\ /c $<
 
 {$(SRCDIR)\src\tools}.c{$(PROG2_OBJDIR)}.obj:
     $(CC_CMD) $(CC_CFLAGS) $(SPROG_CFLAGS) /Fo$@ /Fd$(PROG2_OBJDIR)\ /c $<
@@ -347,7 +347,7 @@ PROG3_OBJS = $(PROG3_OBJS) $(PROG3_OBJDIR)\ahost.obj
 # ------------------------------------------------------------- #
 # ------------------------------------------------------------- #
 # Default target when no CFG library type has been specified,   #
-# results in building target ALL for all c-ares library types.  #
+# results in building target ALL for all c-ci library types.  #
 # ------------------------------------------------------------- #
 # ------------------------------------------------------------- #
 
@@ -376,28 +376,28 @@ install:
 
 !IF "$(VALID_CFGSET)" == "TRUE"
 
-ALL: c-ares adig ahost
+ALL: c-ci adig ahost
     @
 
 # $(HHEADERS) $(CSOURCES)
-c-ares: $(CARES_OBJDIR) $(CARES_OBJS) $(CARES_OUTDIR)
-    $(CARES_LINK) $(CARES_LFLAGS) /out:$(CARES_OUTDIR)\$(CARES_TARGET) $(CARES_OBJS)
+c-ci: $(CI_OBJDIR) $(CI_OBJS) $(CI_OUTDIR)
+    $(CI_LINK) $(CI_LFLAGS) /out:$(CI_OUTDIR)\$(CI_TARGET) $(CI_OBJS)
 !   IF "$(USE_RES_FILE)" == "TRUE"
-    @if exist $(CARES_OUTDIR)\$(CARES_TARGET).manifest mt -nologo -manifest $(CARES_OUTDIR)\$(CARES_TARGET).manifest -outputresource:$(CARES_OUTDIR)\$(CARES_TARGET);2
+    @if exist $(CI_OUTDIR)\$(CI_TARGET).manifest mt -nologo -manifest $(CI_OUTDIR)\$(CI_TARGET).manifest -outputresource:$(CI_OUTDIR)\$(CI_TARGET);2
 !   ENDIF
 
 # adig.c $(SAMPLESOURCES) $(SAMPLEHEADERS)
-adig: c-ares  $(PROG2_OBJDIR) $(PROG2_OBJS) $(PROG2_OUTDIR)
+adig: c-ci  $(PROG2_OBJDIR) $(PROG2_OBJS) $(PROG2_OUTDIR)
     $(SPROG_LINK) $(SPROG_LFLAGS) /out:$(PROG2_OUTDIR)\adig.exe $(PROG2_OBJS:..\lib=)
     @if exist $(PROG2_OUTDIR)\adig.exe.manifest mt -nologo -manifest $(PROG2_OUTDIR)\adig.exe.manifest -outputresource:$(PROG2_OUTDIR)\adig.exe;1
 
 # ahost.c $(SAMPLESOURCES) $(SAMPLEHEADERS)
-ahost: c-ares $(PROG3_OBJDIR) $(PROG3_OBJS) $(PROG3_OUTDIR)
+ahost: c-ci $(PROG3_OBJDIR) $(PROG3_OBJS) $(PROG3_OUTDIR)
     $(SPROG_LINK) $(SPROG_LFLAGS) /out:$(PROG3_OUTDIR)\ahost.exe $(PROG3_OBJS:..\lib=)
     @if exist $(PROG3_OUTDIR)\ahost.exe.manifest mt -nologo -manifest $(PROG3_OUTDIR)\ahost.exe.manifest -outputresource:$(PROG3_OUTDIR)\ahost.exe;1
 
-$(CARES_OUTDIR): $(CARES_DIR)
-    @if not exist $(CARES_OUTDIR) mkdir $(CARES_OUTDIR)
+$(CI_OUTDIR): $(CI_DIR)
+    @if not exist $(CI_OUTDIR) mkdir $(CI_OUTDIR)
 
 $(PROG2_OUTDIR): $(PROG2_DIR)
     @if not exist $(PROG2_OUTDIR) mkdir $(PROG2_OUTDIR)
@@ -405,14 +405,14 @@ $(PROG2_OUTDIR): $(PROG2_DIR)
 $(PROG3_OUTDIR): $(PROG3_DIR)
     @if not exist $(PROG3_OUTDIR) mkdir $(PROG3_OUTDIR)
 
-$(CARES_OBJDIR): $(CARES_OUTDIR)
-    @if not exist $(CARES_OBJDIR) mkdir $(CARES_OBJDIR)
-    @if not exist $(CARES_OBJDIR)\dsa mkdir $(CARES_OBJDIR)\dsa
-    @if not exist $(CARES_OBJDIR)\event mkdir $(CARES_OBJDIR)\event
-    @if not exist $(CARES_OBJDIR)\legacy mkdir $(CARES_OBJDIR)\legacy
-    @if not exist $(CARES_OBJDIR)\record mkdir $(CARES_OBJDIR)\record
-    @if not exist $(CARES_OBJDIR)\str mkdir $(CARES_OBJDIR)\str
-    @if not exist $(CARES_OBJDIR)\util mkdir $(CARES_OBJDIR)\util
+$(CI_OBJDIR): $(CI_OUTDIR)
+    @if not exist $(CI_OBJDIR) mkdir $(CI_OBJDIR)
+    @if not exist $(CI_OBJDIR)\dsa mkdir $(CI_OBJDIR)\dsa
+    @if not exist $(CI_OBJDIR)\event mkdir $(CI_OBJDIR)\event
+    @if not exist $(CI_OBJDIR)\legacy mkdir $(CI_OBJDIR)\legacy
+    @if not exist $(CI_OBJDIR)\record mkdir $(CI_OBJDIR)\record
+    @if not exist $(CI_OBJDIR)\str mkdir $(CI_OBJDIR)\str
+    @if not exist $(CI_OBJDIR)\util mkdir $(CI_OBJDIR)\util
 
 $(PROG2_OBJDIR): $(PROG2_OUTDIR)
     @if not exist $(PROG2_OBJDIR) mkdir $(PROG2_OBJDIR)
@@ -423,38 +423,38 @@ $(PROG3_OBJDIR): $(PROG3_OUTDIR)
     @if not exist $(PROG3_OBJDIR)\str mkdir $(PROG3_OBJDIR)\str
 
 clean:
-    @-RMDIR /S /Q $(CARES_OBJDIR)\dsa >NUL 2>&1
-    @-RMDIR /S /Q $(CARES_OBJDIR)\event >NUL 2>&1
-    @-RMDIR /S /Q $(CARES_OBJDIR)\legacy >NUL 2>&1
-    @-RMDIR /S /Q $(CARES_OBJDIR)\record >NUL 2>&1
-    @-RMDIR /S /Q $(CARES_OBJDIR)\str >NUL 2>&1
-    @-RMDIR /S /Q $(CARES_OBJDIR)\util >NUL 2>&1
-    @-RMDIR /S /Q $(CARES_OUTDIR) >NUL 2>&1
+    @-RMDIR /S /Q $(CI_OBJDIR)\dsa >NUL 2>&1
+    @-RMDIR /S /Q $(CI_OBJDIR)\event >NUL 2>&1
+    @-RMDIR /S /Q $(CI_OBJDIR)\legacy >NUL 2>&1
+    @-RMDIR /S /Q $(CI_OBJDIR)\record >NUL 2>&1
+    @-RMDIR /S /Q $(CI_OBJDIR)\str >NUL 2>&1
+    @-RMDIR /S /Q $(CI_OBJDIR)\util >NUL 2>&1
+    @-RMDIR /S /Q $(CI_OUTDIR) >NUL 2>&1
     @-RMDIR /S /Q $(PROG2_OBJDIR)\str >NUL 2>&1
     @-RMDIR /S /Q $(PROG2_OUTDIR) >NUL 2>&1
     @-RMDIR /S /Q $(PROG3_OBJDIR)\str >NUL 2>&1
     @-RMDIR /S /Q $(PROG3_OUTDIR) >NUL 2>&1
 
 install:
-    @if not exist $(CARES_OUTDIR)\$(CARES_TARGET) \
-        $(MAKE) /f .\Makefile.msvc CFG=$(CFG) c-ares
+    @if not exist $(CI_OUTDIR)\$(CI_TARGET) \
+        $(MAKE) /f .\Makefile.msvc CFG=$(CFG) c-ci
     @if not exist "$(INSTALL_DIR)"     mkdir "$(INSTALL_DIR)"
     @if not exist "$(INSTALL_DIR_LIB)" mkdir "$(INSTALL_DIR_LIB)"
     @if not exist "$(INSTALL_DIR_INC)" mkdir "$(INSTALL_DIR_INC)"
-    @copy /y $(CARES_OUTDIR)\*.*              "$(INSTALL_DIR_LIB)" >NUL
-    @copy /y $(SRCDIR)\include\ares.h         "$(INSTALL_DIR_INC)" >NUL
-    @copy /y $(SRCDIR)\include\ares_build.h   "$(INSTALL_DIR_INC)" >NUL
-    @copy /y $(SRCDIR)\include\ares_version.h "$(INSTALL_DIR_INC)" >NUL
-    @copy /y $(SRCDIR)\include\ares_dns_record.h "$(INSTALL_DIR_INC)" >NUL
-    @echo Installed c-ares $(CFG)
+    @copy /y $(CI_OUTDIR)\*.*              "$(INSTALL_DIR_LIB)" >NUL
+    @copy /y $(SRCDIR)\include\ci.h         "$(INSTALL_DIR_INC)" >NUL
+    @copy /y $(SRCDIR)\include\ci_build.h   "$(INSTALL_DIR_INC)" >NUL
+    @copy /y $(SRCDIR)\include\ci_version.h "$(INSTALL_DIR_INC)" >NUL
+    @copy /y $(SRCDIR)\include\ci_dns_record.h "$(INSTALL_DIR_INC)" >NUL
+    @echo Installed c-ci $(CFG)
 
 !ENDIF
 
 $(BASE_DIR):
     @if not exist $(BASE_DIR) mkdir $(BASE_DIR)
 
-$(CARES_DIR): $(BASE_DIR)
-    @if not exist $(CARES_DIR) mkdir $(CARES_DIR)
+$(CI_DIR): $(BASE_DIR)
+    @if not exist $(CI_DIR) mkdir $(CI_DIR)
 
 $(PROG2_DIR): $(BASE_DIR)
     @if not exist $(PROG2_DIR) mkdir $(PROG2_DIR)

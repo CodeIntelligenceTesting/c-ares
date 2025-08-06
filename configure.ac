@@ -1,11 +1,11 @@
-dnl Copyright (C) The c-ares project and its contributors
+dnl Copyright (C) The c-ci project and its contributors
 dnl SPDX-License-Identifier: MIT
 AC_PREREQ([2.69])
 
-AC_INIT([c-ares], [1.34.2],
-  [c-ares mailing list: http://lists.haxx.se/listinfo/c-ares])
+AC_INIT([c-ci], [1.34.2],
+  [c-ci mailing list: http://lists.haxx.se/listinfo/c-ci])
 
-CARES_VERSION_INFO="21:1:19"
+CI_VERSION_INFO="21:1:19"
 dnl This flag accepts an argument of the form current[:revision[:age]]. So,
 dnl passing -version-info 3:12:1 sets current to 3, revision to 12, and age to
 dnl 1.
@@ -33,10 +33,10 @@ dnl
 dnl 6.If any interfaces have been removed since the last public release, then
 dnl set age to 0. (c:r:a=0)
 dnl
-AC_SUBST([CARES_VERSION_INFO])
+AC_SUBST([CI_VERSION_INFO])
 
-AC_CONFIG_SRCDIR([src/lib/ares_ipv6.h])
-AC_CONFIG_HEADERS([src/lib/ares_config.h include/ares_build.h])
+AC_CONFIG_SRCDIR([src/lib/ci_ipv6.h])
+AC_CONFIG_HEADERS([src/lib/ci_config.h include/ci_build.h])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR([m4])
 AC_USE_SYSTEM_EXTENSIONS
@@ -113,27 +113,27 @@ AC_ARG_ENABLE(tests,
   ]
 )
 
-AC_ARG_ENABLE(cares-threads,
-  AS_HELP_STRING([--disable-cares-threads], [Disable building of thread safety support]),
-  [ CARES_THREADS=${enableval} ],
-  [ CARES_THREADS=yes ])
+AC_ARG_ENABLE(cci-threads,
+  AS_HELP_STRING([--disable-cci-threads], [Disable building of thread safety support]),
+  [ CI_THREADS=${enableval} ],
+  [ CI_THREADS=yes ])
 
 AC_ARG_WITH(random,
   AS_HELP_STRING([--with-random=FILE],
                  [read randomness from FILE (default=/dev/urandom)]),
-  [ CARES_RANDOM_FILE="$withval" ],
-  [ CARES_RANDOM_FILE="/dev/urandom" ]
+  [ CI_RANDOM_FILE="$withval" ],
+  [ CI_RANDOM_FILE="/dev/urandom" ]
 )
-if test -n "$CARES_RANDOM_FILE" && test X"$CARES_RANDOM_FILE" != Xno ; then
-  AC_SUBST(CARES_RANDOM_FILE)
-  AC_DEFINE_UNQUOTED(CARES_RANDOM_FILE, "$CARES_RANDOM_FILE", [a suitable file/device to read random data from])
+if test -n "$CI_RANDOM_FILE" && test X"$CI_RANDOM_FILE" != Xno ; then
+  AC_SUBST(CI_RANDOM_FILE)
+  AC_DEFINE_UNQUOTED(CI_RANDOM_FILE, "$CI_RANDOM_FILE", [a suitable file/device to read random data from])
 fi
 
 AM_MAINTAINER_MODE
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 
-dnl CARES_DEFINE_UNQUOTED (VARIABLE, [VALUE])
+dnl CI_DEFINE_UNQUOTED (VARIABLE, [VALUE])
 dnl -------------------------------------------------
 dnl Like AC_DEFINE_UNQUOTED this macro will define a C preprocessor
 dnl symbol that can be further used in custom template configuration
@@ -146,7 +146,7 @@ dnl stub and definition into the first configuration header file. Do
 dnl not use this macro as a replacement for AC_DEFINE_UNQUOTED, each
 dnl one serves different functional needs.
 
-AC_DEFUN([CARES_DEFINE_UNQUOTED], [
+AC_DEFUN([CI_DEFINE_UNQUOTED], [
 cat >>confdefs.h <<_EOF
 [@%:@define] $1 ifelse($#, 2, [$2], 1)
 _EOF
@@ -173,15 +173,15 @@ case $host_os in
 esac
 
 dnl -no-undefined libtool (not linker) flag for windows
-cares_use_no_undefined=no
+cci_use_no_undefined=no
 case $host_os in
   cygwin* | mingw* | pw32* | cegcc* | os2* | aix*)
-    cares_use_no_undefined=yes
+    cci_use_no_undefined=yes
     ;;
   *)
     ;;
 esac
-AM_CONDITIONAL([CARES_USE_NO_UNDEFINED], [test "$cares_use_no_undefined" = 'yes'])
+AM_CONDITIONAL([CI_USE_NO_UNDEFINED], [test "$cci_use_no_undefined" = 'yes'])
 
 
 if test "$ac_cv_native_windows" = "yes" ; then
@@ -193,12 +193,12 @@ if test "$ac_cv_native_windows" = "yes" -a "x$enable_shared" = "xyes" -a "x$enab
   AC_MSG_ERROR([Windows cannot build both static and shared simultaneously, specify --disable-shared or --disable-static])
 fi
 
-dnl Only windows requires CARES_STATICLIB definition
+dnl Only windows requires CI_STATICLIB definition
 if test "x$enable_shared" = "xno" -a "x$enable_static" = "xyes" ; then
-  AC_MSG_CHECKING([whether we need CARES_STATICLIB definition])
+  AC_MSG_CHECKING([whether we need CI_STATICLIB definition])
   if test "$ac_cv_native_windows" = "yes" ; then
-    AX_APPEND_FLAG([-DCARES_STATICLIB], [AM_CPPFLAGS])
-    PKGCONFIG_CFLAGS="-DCARES_STATICLIB"
+    AX_APPEND_FLAG([-DCI_STATICLIB], [AM_CPPFLAGS])
+    PKGCONFIG_CFLAGS="-DCI_STATICLIB"
     AC_MSG_RESULT([yes])
   else
     AC_MSG_RESULT([no])
@@ -206,7 +206,7 @@ if test "x$enable_shared" = "xno" -a "x$enable_static" = "xyes" ; then
 fi
 
 dnl Test for symbol hiding
-CARES_SYMBOL_HIDING_CFLAG=""
+CI_SYMBOL_HIDING_CFLAG=""
 if test "$symbol_hiding" != "no" ; then
   compiler_supports_symbol_hiding="no"
   if test "$ac_cv_windows" = "yes" ; then
@@ -214,14 +214,14 @@ if test "$symbol_hiding" != "no" ; then
   else
     case "$ax_cv_c_compiler_vendor" in
       clang|gnu|intel)
-        AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden], [CARES_SYMBOL_HIDING_CFLAG])
-        if test "x$CARES_SYMBOL_HIDING_CFLAG" != "x" ; then
+        AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden], [CI_SYMBOL_HIDING_CFLAG])
+        if test "x$CI_SYMBOL_HIDING_CFLAG" != "x" ; then
           compiler_supports_symbol_hiding="yes"
         fi
         ;;
       sun)
-        AX_APPEND_COMPILE_FLAGS([-xldscope=hidden], [CARES_SYMBOL_HIDING_CFLAG])
-        if test "x$CARES_SYMBOL_HIDING_CFLAG" != "x" ; then
+        AX_APPEND_COMPILE_FLAGS([-xldscope=hidden], [CI_SYMBOL_HIDING_CFLAG])
+        if test "x$CI_SYMBOL_HIDING_CFLAG" != "x" ; then
           compiler_supports_symbol_hiding="yes"
         fi
         ;;
@@ -234,12 +234,12 @@ if test "$symbol_hiding" != "no" ; then
       symbol_hiding="no"
     fi
   else
-    AC_DEFINE([CARES_SYMBOL_HIDING], [ 1 ], [Set to 1 if non-pubilc shared library symbols are hidden])
+    AC_DEFINE([CI_SYMBOL_HIDING], [ 1 ], [Set to 1 if non-pubilc shared library symbols are hidden])
     symbol_hiding="yes"
   fi
 fi
-AM_CONDITIONAL(CARES_SYMBOL_HIDING, test "x$symbol_hiding" = "xyes")
-AC_SUBST(CARES_SYMBOL_HIDING_CFLAG)
+AM_CONDITIONAL(CI_SYMBOL_HIDING, test "x$symbol_hiding" = "xyes")
+AC_SUBST(CI_SYMBOL_HIDING_CFLAG)
 
 
 if test "$enable_warnings" = "yes"; then
@@ -301,7 +301,7 @@ AC_MSG_RESULT($need_xnet)
 dnl resolv lib for z/OS
 AS_IF([test "x$host_vendor" = "xibm" -a "x$host_os" = "xopenedition" ], [
   AC_SEARCH_LIBS([res_init], [resolv], [
-    AC_DEFINE([CARES_USE_LIBRESOLV], [1], [Use resolver library to configure cares])
+    AC_DEFINE([CI_USE_LIBRESOLV], [1], [Use resolver library to configure cci])
   ], [
     AC_MSG_ERROR([Unable to find libresolv which is required for z/OS])
   ])
@@ -404,7 +404,7 @@ dnl *Sigh* these are needed in order for net/if.h to get properly detected.
 )
 
 
-cares_all_includes="
+cci_all_includes="
 #include <stdio.h>
 #include <stdlib.h>
 #ifdef HAVE_AVAILABILITYMACROS_H
@@ -508,22 +508,22 @@ cares_all_includes="
 #endif
 "
 
-AC_CHECK_DECL([HAVE_ARPA_NAMESER_H],[CARES_DEFINE_UNQUOTED([CARES_HAVE_ARPA_NAMESER_H])], [])
-AC_CHECK_DECL([HAVE_ARPA_NAMESER_COMPAT_H],[CARES_DEFINE_UNQUOTED([CARES_HAVE_ARPA_NAMESER_COMPAT_H])],[])
+AC_CHECK_DECL([HAVE_ARPA_NAMESER_H],[CI_DEFINE_UNQUOTED([CI_HAVE_ARPA_NAMESER_H])], [])
+AC_CHECK_DECL([HAVE_ARPA_NAMESER_COMPAT_H],[CI_DEFINE_UNQUOTED([CI_HAVE_ARPA_NAMESER_COMPAT_H])],[])
 AC_CHECK_TYPE(long long, [AC_DEFINE(HAVE_LONGLONG, 1, [Define to 1 if the compiler supports the 'long long' data type.])])
-AC_CHECK_TYPE(ssize_t, [ CARES_TYPEOF_ARES_SSIZE_T=ssize_t ], [ CARES_TYPEOF_ARES_SSIZE_T=int ])
-AC_DEFINE_UNQUOTED([CARES_TYPEOF_ARES_SSIZE_T], ${CARES_TYPEOF_ARES_SSIZE_T}, [the signed version of size_t])
+AC_CHECK_TYPE(ssize_t, [ CI_TYPEOF_CI_SSIZE_T=ssize_t ], [ CI_TYPEOF_CI_SSIZE_T=int ])
+AC_DEFINE_UNQUOTED([CI_TYPEOF_CI_SSIZE_T], ${CI_TYPEOF_CI_SSIZE_T}, [the signed version of size_t])
 
 AC_CHECK_TYPE(socklen_t,
   [
     AC_DEFINE(HAVE_SOCKLEN_T, [], [socklen_t])
-    CARES_DEFINE_UNQUOTED([CARES_TYPEOF_ARES_SOCKLEN_T], [socklen_t])
+    CI_DEFINE_UNQUOTED([CI_TYPEOF_CI_SOCKLEN_T], [socklen_t])
   ],
-  [ CARES_DEFINE_UNQUOTED([CARES_TYPEOF_ARES_SOCKLEN_T], [int]) ],
-  $cares_all_includes
+  [ CI_DEFINE_UNQUOTED([CI_TYPEOF_CI_SOCKLEN_T], [int]) ],
+  $cci_all_includes
  )
 
-AC_CHECK_TYPE(SOCKET, [], [], $cares_all_includes)
+AC_CHECK_TYPE(SOCKET, [], [], $cci_all_includes)
 
 dnl ###############################################################################
 
@@ -540,54 +540,54 @@ dnl https://mailman.videolan.org/pipermail/vlc-devel/2015-March/101802.html
 dnl which would require we check each individually and provide function arguments
 dnl for the test.
 
-AC_CHECK_DECL(memmem,          [AC_DEFINE([HAVE_MEMMEM],            1, [Define to 1 if you have `memmem`]         )], [], $cares_all_includes)
-AC_CHECK_DECL(recv,            [AC_DEFINE([HAVE_RECV],              1, [Define to 1 if you have `recv`]           )], [], $cares_all_includes)
-AC_CHECK_DECL(recvfrom,        [AC_DEFINE([HAVE_RECVFROM],          1, [Define to 1 if you have `recvfrom`]       )], [], $cares_all_includes)
-AC_CHECK_DECL(send,            [AC_DEFINE([HAVE_SEND],              1, [Define to 1 if you have `send`]           )], [], $cares_all_includes)
-AC_CHECK_DECL(sendto,          [AC_DEFINE([HAVE_SENDTO],            1, [Define to 1 if you have `sendto`]         )], [], $cares_all_includes)
-AC_CHECK_DECL(getnameinfo,     [AC_DEFINE([HAVE_GETNAMEINFO],       1, [Define to 1 if you have `getnameinfo`]    )], [], $cares_all_includes)
-AC_CHECK_DECL(gethostname,     [AC_DEFINE([HAVE_GETHOSTNAME],       1, [Define to 1 if you have `gethostname`]    )], [], $cares_all_includes)
-AC_CHECK_DECL(connect,         [AC_DEFINE([HAVE_CONNECT],           1, [Define to 1 if you have `connect`]        )], [], $cares_all_includes)
-AC_CHECK_DECL(connectx,        [AC_DEFINE([HAVE_CONNECTX],          1, [Define to 1 if you have `connectx`]       )], [], $cares_all_includes)
-AC_CHECK_DECL(closesocket,     [AC_DEFINE([HAVE_CLOSESOCKET],       1, [Define to 1 if you have `closesocket`]    )], [], $cares_all_includes)
-AC_CHECK_DECL(CloseSocket,     [AC_DEFINE([HAVE_CLOSESOCKET_CAMEL], 1, [Define to 1 if you have `CloseSocket`]    )], [], $cares_all_includes)
-AC_CHECK_DECL(fcntl,           [AC_DEFINE([HAVE_FCNTL],             1, [Define to 1 if you have `fcntl`]          )], [], $cares_all_includes)
-AC_CHECK_DECL(getenv,          [AC_DEFINE([HAVE_GETENV],            1, [Define to 1 if you have `getenv`]         )], [], $cares_all_includes)
-AC_CHECK_DECL(gethostname,     [AC_DEFINE([HAVE_GETHOSTNAME],       1, [Define to 1 if you have `gethostname`]    )], [], $cares_all_includes)
-AC_CHECK_DECL(getrandom,       [AC_DEFINE([HAVE_GETRANDOM],         1, [Define to 1 if you have `getrandom`]      )], [], $cares_all_includes)
-AC_CHECK_DECL(getservbyport_r, [AC_DEFINE([HAVE_GETSERVBYPORT_R],   1, [Define to 1 if you have `getservbyport_r`])], [], $cares_all_includes)
-AC_CHECK_DECL(inet_net_pton,   [AC_DEFINE([HAVE_INET_NET_PTON],     1, [Define to 1 if you have `inet_net_pton`]  )], [], $cares_all_includes)
-AC_CHECK_DECL(inet_ntop,       [AC_DEFINE([HAVE_INET_NTOP],         1, [Define to 1 if you have `inet_ntop`]      )], [], $cares_all_includes)
-AC_CHECK_DECL(inet_pton,       [AC_DEFINE([HAVE_INET_PTON],         1, [Define to 1 if you have `inet_pton`]      )], [], $cares_all_includes)
-AC_CHECK_DECL(ioctl,           [AC_DEFINE([HAVE_IOCTL],             1, [Define to 1 if you have `ioctl`]          )], [], $cares_all_includes)
-AC_CHECK_DECL(ioctlsocket,     [AC_DEFINE([HAVE_IOCTLSOCKET],       1, [Define to 1 if you have `ioctlsocket`]    )], [], $cares_all_includes)
-AC_CHECK_DECL(IoctlSocket,     [AC_DEFINE([HAVE_IOCTLSOCKET_CAMEL], 1, [Define to 1 if you have `IoctlSocket`]    )], [], $cares_all_includes)
-AC_CHECK_DECL(setsockopt,      [AC_DEFINE([HAVE_SETSOCKOPT],        1, [Define to 1 if you have `setsockopt`]     )], [], $cares_all_includes)
-AC_CHECK_DECL(socket,          [AC_DEFINE([HAVE_SOCKET],            1, [Define to 1 if you have `socket`]         )], [], $cares_all_includes)
-AC_CHECK_DECL(strcasecmp,      [AC_DEFINE([HAVE_STRCASECMP],        1, [Define to 1 if you have `strcasecmp`]     )], [], $cares_all_includes)
-AC_CHECK_DECL(strdup,          [AC_DEFINE([HAVE_STRDUP],            1, [Define to 1 if you have `strdup`]         )], [], $cares_all_includes)
-AC_CHECK_DECL(stricmp,         [AC_DEFINE([HAVE_STRICMP],           1, [Define to 1 if you have `stricmp`]        )], [], $cares_all_includes)
-AC_CHECK_DECL(strncasecmp,     [AC_DEFINE([HAVE_STRNCASECMP],       1, [Define to 1 if you have `strncasecmp`]    )], [], $cares_all_includes)
-AC_CHECK_DECL(strncmpi,        [AC_DEFINE([HAVE_STRNCMPI],          1, [Define to 1 if you have `strncmpi`]       )], [], $cares_all_includes)
-AC_CHECK_DECL(strnicmp,        [AC_DEFINE([HAVE_STRNICMP],          1, [Define to 1 if you have `strnicmp`]       )], [], $cares_all_includes)
-AC_CHECK_DECL(writev,          [AC_DEFINE([HAVE_WRITEV],            1, [Define to 1 if you have `writev`]         )], [], $cares_all_includes)
-AC_CHECK_DECL(arc4random_buf,  [AC_DEFINE([HAVE_ARC4RANDOM_BUF],    1, [Define to 1 if you have `arc4random_buf`] )], [], $cares_all_includes)
-AC_CHECK_DECL(stat,            [AC_DEFINE([HAVE_STAT],              1, [Define to 1 if you have `stat`]           )], [], $cares_all_includes)
-AC_CHECK_DECL(gettimeofday,    [AC_DEFINE([HAVE_GETTIMEOFDAY],      1, [Define to 1 if you have `gettimeofday`]   )], [], $cares_all_includes)
-AC_CHECK_DECL(clock_gettime,   [AC_DEFINE([HAVE_CLOCK_GETTIME],     1, [Define to 1 if you have `clock_gettime`]  )], [], $cares_all_includes)
-AC_CHECK_DECL(if_indextoname,  [AC_DEFINE([HAVE_IF_INDEXTONAME],    1, [Define to 1 if you have `if_indextoname`] )], [], $cares_all_includes)
-AC_CHECK_DECL(if_nametoindex,  [AC_DEFINE([HAVE_IF_NAMETOINDEX],    1, [Define to 1 if you have `if_nametoindex`] )], [], $cares_all_includes)
-AC_CHECK_DECL(getifaddrs,      [AC_DEFINE([HAVE_GETIFADDRS],        1, [Define to 1 if you have `getifaddrs`]     )], [], $cares_all_includes)
-AC_CHECK_DECL(poll,            [AC_DEFINE([HAVE_POLL],              1, [Define to 1 if you have `poll`]           )], [], $cares_all_includes)
-AC_CHECK_DECL(pipe,            [AC_DEFINE([HAVE_PIPE],              1, [Define to 1 if you have `pipe`]           )], [], $cares_all_includes)
-AC_CHECK_DECL(pipe2,           [AC_DEFINE([HAVE_PIPE2],             1, [Define to 1 if you have `pipe2`]          )], [], $cares_all_includes)
-AC_CHECK_DECL(kqueue,          [AC_DEFINE([HAVE_KQUEUE],            1, [Define to 1 if you have `kqueue`]         )], [], $cares_all_includes)
-AC_CHECK_DECL(epoll_create1,   [AC_DEFINE([HAVE_EPOLL],             1, [Define to 1 if you have `epoll_{create1,ctl,wait}`])], [], $cares_all_includes)
-AC_CHECK_DECL(ConvertInterfaceIndexToLuid, [AC_DEFINE([HAVE_CONVERTINTERFACEINDEXTOLUID], 1, [Define to 1 if you have `ConvertInterfaceIndexToLuid`])], [], $cares_all_includes)
-AC_CHECK_DECL(ConvertInterfaceLuidToNameA, [AC_DEFINE([HAVE_CONVERTINTERFACELUIDTONAMEA], 1, [Define to 1 if you have `ConvertInterfaceLuidToNameA`])], [], $cares_all_includes)
-AC_CHECK_DECL(NotifyIpInterfaceChange,     [AC_DEFINE([HAVE_NOTIFYIPINTERFACECHANGE],     1, [Define to 1 if you have `NotifyIpInterfaceChange`]    )], [], $cares_all_includes)
-AC_CHECK_DECL(RegisterWaitForSingleObject, [AC_DEFINE([HAVE_REGISTERWAITFORSINGLEOBJECT], 1, [Define to 1 if you have `RegisterWaitForSingleObject`])], [], $cares_all_includes)
-AC_CHECK_DECL(__system_property_get,       [AC_DEFINE([HAVE___SYSTEM_PROPERTY_GET],       1, [Define to 1 if you have `__system_property_get`]      )], [], $cares_all_includes)
+AC_CHECK_DECL(memmem,          [AC_DEFINE([HAVE_MEMMEM],            1, [Define to 1 if you have `memmem`]         )], [], $cci_all_includes)
+AC_CHECK_DECL(recv,            [AC_DEFINE([HAVE_RECV],              1, [Define to 1 if you have `recv`]           )], [], $cci_all_includes)
+AC_CHECK_DECL(recvfrom,        [AC_DEFINE([HAVE_RECVFROM],          1, [Define to 1 if you have `recvfrom`]       )], [], $cci_all_includes)
+AC_CHECK_DECL(send,            [AC_DEFINE([HAVE_SEND],              1, [Define to 1 if you have `send`]           )], [], $cci_all_includes)
+AC_CHECK_DECL(sendto,          [AC_DEFINE([HAVE_SENDTO],            1, [Define to 1 if you have `sendto`]         )], [], $cci_all_includes)
+AC_CHECK_DECL(getnameinfo,     [AC_DEFINE([HAVE_GETNAMEINFO],       1, [Define to 1 if you have `getnameinfo`]    )], [], $cci_all_includes)
+AC_CHECK_DECL(gethostname,     [AC_DEFINE([HAVE_GETHOSTNAME],       1, [Define to 1 if you have `gethostname`]    )], [], $cci_all_includes)
+AC_CHECK_DECL(connect,         [AC_DEFINE([HAVE_CONNECT],           1, [Define to 1 if you have `connect`]        )], [], $cci_all_includes)
+AC_CHECK_DECL(connectx,        [AC_DEFINE([HAVE_CONNECTX],          1, [Define to 1 if you have `connectx`]       )], [], $cci_all_includes)
+AC_CHECK_DECL(closesocket,     [AC_DEFINE([HAVE_CLOSESOCKET],       1, [Define to 1 if you have `closesocket`]    )], [], $cci_all_includes)
+AC_CHECK_DECL(CloseSocket,     [AC_DEFINE([HAVE_CLOSESOCKET_CAMEL], 1, [Define to 1 if you have `CloseSocket`]    )], [], $cci_all_includes)
+AC_CHECK_DECL(fcntl,           [AC_DEFINE([HAVE_FCNTL],             1, [Define to 1 if you have `fcntl`]          )], [], $cci_all_includes)
+AC_CHECK_DECL(getenv,          [AC_DEFINE([HAVE_GETENV],            1, [Define to 1 if you have `getenv`]         )], [], $cci_all_includes)
+AC_CHECK_DECL(gethostname,     [AC_DEFINE([HAVE_GETHOSTNAME],       1, [Define to 1 if you have `gethostname`]    )], [], $cci_all_includes)
+AC_CHECK_DECL(getrandom,       [AC_DEFINE([HAVE_GETRANDOM],         1, [Define to 1 if you have `getrandom`]      )], [], $cci_all_includes)
+AC_CHECK_DECL(getservbyport_r, [AC_DEFINE([HAVE_GETSERVBYPORT_R],   1, [Define to 1 if you have `getservbyport_r`])], [], $cci_all_includes)
+AC_CHECK_DECL(inet_net_pton,   [AC_DEFINE([HAVE_INET_NET_PTON],     1, [Define to 1 if you have `inet_net_pton`]  )], [], $cci_all_includes)
+AC_CHECK_DECL(inet_ntop,       [AC_DEFINE([HAVE_INET_NTOP],         1, [Define to 1 if you have `inet_ntop`]      )], [], $cci_all_includes)
+AC_CHECK_DECL(inet_pton,       [AC_DEFINE([HAVE_INET_PTON],         1, [Define to 1 if you have `inet_pton`]      )], [], $cci_all_includes)
+AC_CHECK_DECL(ioctl,           [AC_DEFINE([HAVE_IOCTL],             1, [Define to 1 if you have `ioctl`]          )], [], $cci_all_includes)
+AC_CHECK_DECL(ioctlsocket,     [AC_DEFINE([HAVE_IOCTLSOCKET],       1, [Define to 1 if you have `ioctlsocket`]    )], [], $cci_all_includes)
+AC_CHECK_DECL(IoctlSocket,     [AC_DEFINE([HAVE_IOCTLSOCKET_CAMEL], 1, [Define to 1 if you have `IoctlSocket`]    )], [], $cci_all_includes)
+AC_CHECK_DECL(setsockopt,      [AC_DEFINE([HAVE_SETSOCKOPT],        1, [Define to 1 if you have `setsockopt`]     )], [], $cci_all_includes)
+AC_CHECK_DECL(socket,          [AC_DEFINE([HAVE_SOCKET],            1, [Define to 1 if you have `socket`]         )], [], $cci_all_includes)
+AC_CHECK_DECL(strcasecmp,      [AC_DEFINE([HAVE_STRCASECMP],        1, [Define to 1 if you have `strcasecmp`]     )], [], $cci_all_includes)
+AC_CHECK_DECL(strdup,          [AC_DEFINE([HAVE_STRDUP],            1, [Define to 1 if you have `strdup`]         )], [], $cci_all_includes)
+AC_CHECK_DECL(stricmp,         [AC_DEFINE([HAVE_STRICMP],           1, [Define to 1 if you have `stricmp`]        )], [], $cci_all_includes)
+AC_CHECK_DECL(strncasecmp,     [AC_DEFINE([HAVE_STRNCASECMP],       1, [Define to 1 if you have `strncasecmp`]    )], [], $cci_all_includes)
+AC_CHECK_DECL(strncmpi,        [AC_DEFINE([HAVE_STRNCMPI],          1, [Define to 1 if you have `strncmpi`]       )], [], $cci_all_includes)
+AC_CHECK_DECL(strnicmp,        [AC_DEFINE([HAVE_STRNICMP],          1, [Define to 1 if you have `strnicmp`]       )], [], $cci_all_includes)
+AC_CHECK_DECL(writev,          [AC_DEFINE([HAVE_WRITEV],            1, [Define to 1 if you have `writev`]         )], [], $cci_all_includes)
+AC_CHECK_DECL(arc4random_buf,  [AC_DEFINE([HAVE_ARC4RANDOM_BUF],    1, [Define to 1 if you have `arc4random_buf`] )], [], $cci_all_includes)
+AC_CHECK_DECL(stat,            [AC_DEFINE([HAVE_STAT],              1, [Define to 1 if you have `stat`]           )], [], $cci_all_includes)
+AC_CHECK_DECL(gettimeofday,    [AC_DEFINE([HAVE_GETTIMEOFDAY],      1, [Define to 1 if you have `gettimeofday`]   )], [], $cci_all_includes)
+AC_CHECK_DECL(clock_gettime,   [AC_DEFINE([HAVE_CLOCK_GETTIME],     1, [Define to 1 if you have `clock_gettime`]  )], [], $cci_all_includes)
+AC_CHECK_DECL(if_indextoname,  [AC_DEFINE([HAVE_IF_INDEXTONAME],    1, [Define to 1 if you have `if_indextoname`] )], [], $cci_all_includes)
+AC_CHECK_DECL(if_nametoindex,  [AC_DEFINE([HAVE_IF_NAMETOINDEX],    1, [Define to 1 if you have `if_nametoindex`] )], [], $cci_all_includes)
+AC_CHECK_DECL(getifaddrs,      [AC_DEFINE([HAVE_GETIFADDRS],        1, [Define to 1 if you have `getifaddrs`]     )], [], $cci_all_includes)
+AC_CHECK_DECL(poll,            [AC_DEFINE([HAVE_POLL],              1, [Define to 1 if you have `poll`]           )], [], $cci_all_includes)
+AC_CHECK_DECL(pipe,            [AC_DEFINE([HAVE_PIPE],              1, [Define to 1 if you have `pipe`]           )], [], $cci_all_includes)
+AC_CHECK_DECL(pipe2,           [AC_DEFINE([HAVE_PIPE2],             1, [Define to 1 if you have `pipe2`]          )], [], $cci_all_includes)
+AC_CHECK_DECL(kqueue,          [AC_DEFINE([HAVE_KQUEUE],            1, [Define to 1 if you have `kqueue`]         )], [], $cci_all_includes)
+AC_CHECK_DECL(epoll_create1,   [AC_DEFINE([HAVE_EPOLL],             1, [Define to 1 if you have `epoll_{create1,ctl,wait}`])], [], $cci_all_includes)
+AC_CHECK_DECL(ConvertInterfaceIndexToLuid, [AC_DEFINE([HAVE_CONVERTINTERFACEINDEXTOLUID], 1, [Define to 1 if you have `ConvertInterfaceIndexToLuid`])], [], $cci_all_includes)
+AC_CHECK_DECL(ConvertInterfaceLuidToNameA, [AC_DEFINE([HAVE_CONVERTINTERFACELUIDTONAMEA], 1, [Define to 1 if you have `ConvertInterfaceLuidToNameA`])], [], $cci_all_includes)
+AC_CHECK_DECL(NotifyIpInterfaceChange,     [AC_DEFINE([HAVE_NOTIFYIPINTERFACECHANGE],     1, [Define to 1 if you have `NotifyIpInterfaceChange`]    )], [], $cci_all_includes)
+AC_CHECK_DECL(RegisterWaitForSingleObject, [AC_DEFINE([HAVE_REGISTERWAITFORSINGLEOBJECT], 1, [Define to 1 if you have `RegisterWaitForSingleObject`])], [], $cci_all_includes)
+AC_CHECK_DECL(__system_property_get,       [AC_DEFINE([HAVE___SYSTEM_PROPERTY_GET],       1, [Define to 1 if you have `__system_property_get`]      )], [], $cci_all_includes)
 
 
 dnl ###############################################################################
@@ -705,20 +705,20 @@ if test "$ac_cv_have_decl_getservbyname_r" = "yes" ; then
 fi
 
 AC_TYPE_SIZE_T
-AC_CHECK_DECL(AF_INET6, [AC_DEFINE([HAVE_AF_INET6],1,[Define to 1 if you have AF_INET6])], [], $cares_all_includes)
-AC_CHECK_DECL(PF_INET6, [AC_DEFINE([HAVE_PF_INET6],1,[Define to 1 if you have PF_INET6])], [], $cares_all_includes)
-AC_CHECK_TYPES(struct in6_addr, [], [], $cares_all_includes)
-AC_CHECK_TYPES(struct sockaddr_in6, [], [], $cares_all_includes)
-AC_CHECK_TYPES(struct sockaddr_storage, [], [], $cares_all_includes)
-AC_CHECK_TYPES(struct addrinfo, [], [], $cares_all_includes)
-AC_CHECK_TYPES(struct timeval, [], [], $cares_all_includes)
-AC_CHECK_MEMBERS(struct sockaddr_in6.sin6_scope_id, [], [], $cares_all_includes)
-AC_CHECK_MEMBERS(struct addrinfo.ai_flags, [], [], $cares_all_includes)
-AC_CHECK_DECL(FIONBIO, [], [], $cares_all_includes)
-AC_CHECK_DECL(O_NONBLOCK, [], [], $cares_all_includes)
-AC_CHECK_DECL(SO_NONBLOCK, [], [], $cares_all_includes)
-AC_CHECK_DECL(MSG_NOSIGNAL, [], [], $cares_all_includes)
-AC_CHECK_DECL(CLOCK_MONOTONIC, [], [], $cares_all_includes)
+AC_CHECK_DECL(AF_INET6, [AC_DEFINE([HAVE_AF_INET6],1,[Define to 1 if you have AF_INET6])], [], $cci_all_includes)
+AC_CHECK_DECL(PF_INET6, [AC_DEFINE([HAVE_PF_INET6],1,[Define to 1 if you have PF_INET6])], [], $cci_all_includes)
+AC_CHECK_TYPES(struct in6_addr, [], [], $cci_all_includes)
+AC_CHECK_TYPES(struct sockaddr_in6, [], [], $cci_all_includes)
+AC_CHECK_TYPES(struct sockaddr_storage, [], [], $cci_all_includes)
+AC_CHECK_TYPES(struct addrinfo, [], [], $cci_all_includes)
+AC_CHECK_TYPES(struct timeval, [], [], $cci_all_includes)
+AC_CHECK_MEMBERS(struct sockaddr_in6.sin6_scope_id, [], [], $cci_all_includes)
+AC_CHECK_MEMBERS(struct addrinfo.ai_flags, [], [], $cci_all_includes)
+AC_CHECK_DECL(FIONBIO, [], [], $cci_all_includes)
+AC_CHECK_DECL(O_NONBLOCK, [], [], $cci_all_includes)
+AC_CHECK_DECL(SO_NONBLOCK, [], [], $cci_all_includes)
+AC_CHECK_DECL(MSG_NOSIGNAL, [], [], $cci_all_includes)
+AC_CHECK_DECL(CLOCK_MONOTONIC, [], [], $cci_all_includes)
 
 if test "$ac_cv_have_decl_CLOCK_MONOTONIC" = "yes" -a "$ac_cv_have_decl_clock_gettime" = "yes" ; then
   AC_DEFINE([HAVE_CLOCK_GETTIME_MONOTONIC], [ 1 ], [ clock_gettime() with CLOCK_MONOTONIC support ])
@@ -737,43 +737,43 @@ if test "$ac_cv_have_decl_O_NONBLOCK" = "yes" -a "$ac_cv_have_decl_fcntl" = "yes
   AC_DEFINE([HAVE_FCNTL_O_NONBLOCK], [ 1 ], [ fcntl() with O_NONBLOCK support ])
 fi
 
-dnl ares_build.h.in specific defines
+dnl ci_build.h.in specific defines
 if test "x$ac_cv_header_sys_types_h" = "xyes" ; then
-  CARES_DEFINE_UNQUOTED([CARES_HAVE_SYS_TYPES_H],[1])
+  CI_DEFINE_UNQUOTED([CI_HAVE_SYS_TYPES_H],[1])
 fi
 if test "x$ac_cv_header_sys_socket_h" = "xyes" ; then
-  CARES_DEFINE_UNQUOTED([CARES_HAVE_SYS_SOCKET_H],[1])
+  CI_DEFINE_UNQUOTED([CI_HAVE_SYS_SOCKET_H],[1])
 fi
 if test "x$ac_cv_header_sys_select_h" = "xyes" ; then
-  CARES_DEFINE_UNQUOTED([CARES_HAVE_SYS_SELECT_H],[1])
+  CI_DEFINE_UNQUOTED([CI_HAVE_SYS_SELECT_H],[1])
 fi
 if test "x$ac_cv_header_ws2tcpip_h" = "xyes" ; then
-  CARES_DEFINE_UNQUOTED([CARES_HAVE_WS2TCPIP_H],[1])
+  CI_DEFINE_UNQUOTED([CI_HAVE_WS2TCPIP_H],[1])
 fi
 if test "x$ac_cv_header_winsock2_h" = "xyes" ; then
-  CARES_DEFINE_UNQUOTED([CARES_HAVE_WINSOCK2_H],[1])
+  CI_DEFINE_UNQUOTED([CI_HAVE_WINSOCK2_H],[1])
 fi
 if test "x$ac_cv_header_windows_h" = "xyes" ; then
-  CARES_DEFINE_UNQUOTED([CARES_HAVE_WINDOWS_H],[1])
+  CI_DEFINE_UNQUOTED([CI_HAVE_WINDOWS_H],[1])
 fi
 if test "x$ac_cv_header_arpa_nameser_h" = "xyes" ; then
-  CARES_DEFINE_UNQUOTED([CARES_HAVE_ARPA_NAMESER_H],[1])
+  CI_DEFINE_UNQUOTED([CI_HAVE_ARPA_NAMESER_H],[1])
 fi
 if test "x$ac_cv_header_arpa_nameser_compa_h" = "xyes" ; then
-  CARES_DEFINE_UNQUOTED([CARES_HAVE_ARPA_NAMESER_COMPA_H],[1])
+  CI_DEFINE_UNQUOTED([CI_HAVE_ARPA_NAMESER_COMPA_H],[1])
 fi
 
 
 dnl ------------ THREADING --------------
 
 dnl windows always supports threads, only check non-windows systems.
-if test "${CARES_THREADS}" = "yes" -a "x${ac_cv_native_windows}" != "xyes" ; then
+if test "${CI_THREADS}" = "yes" -a "x${ac_cv_native_windows}" != "xyes" ; then
   AX_PTHREAD([ ], [
     AC_MSG_WARN([threads requested but not supported])
-    CARES_THREADS=no
+    CI_THREADS=no
   ])
 
-  if test "${CARES_THREADS}" = "yes" ; then
+  if test "${CI_THREADS}" = "yes" ; then
     AC_CHECK_HEADERS([pthread.h pthread_np.h])
     LIBS="$PTHREAD_LIBS $LIBS"
     AM_CFLAGS="$AM_CFLAGS $PTHREAD_CFLAGS"
@@ -782,12 +782,12 @@ if test "${CARES_THREADS}" = "yes" -a "x${ac_cv_native_windows}" != "xyes" ; the
   fi
 fi
 
-if test "${CARES_THREADS}" = "yes" ; then
-  AC_DEFINE([CARES_THREADS], [ 1 ], [Threading enabled])
+if test "${CI_THREADS}" = "yes" ; then
+  AC_DEFINE([CI_THREADS], [ 1 ], [Threading enabled])
 fi
 
-CARES_PRIVATE_LIBS="$LIBS"
-AC_SUBST(CARES_PRIVATE_LIBS)
+CI_PRIVATE_LIBS="$LIBS"
+AC_SUBST(CI_PRIVATE_LIBS)
 
 BUILD_SUBDIRS="include src docs"
 
@@ -832,7 +832,7 @@ if test "x$build_tests" != "xno" ; then
 
   AX_CXX_COMPILE_STDCXX_14([noext],[mandatory])
   if test "$ac_cv_native_windows" != "yes" ; then
-    AX_PTHREAD([ CARES_TEST_PTHREADS="yes" ], [ AC_MSG_ERROR([threading required for tests]) ])
+    AX_PTHREAD([ CI_TEST_PTHREADS="yes" ], [ AC_MSG_ERROR([threading required for tests]) ])
   fi
 
   BUILD_SUBDIRS="${BUILD_SUBDIRS} test"
@@ -853,7 +853,7 @@ AC_CONFIG_FILES([Makefile
                  src/lib/Makefile
                  src/tools/Makefile
                  docs/Makefile
-                 libcares.pc ])
+                 libcci.pc ])
 AM_COND_IF([BUILD_TESTS],
            [AC_CONFIG_FILES([test/Makefile])])
 

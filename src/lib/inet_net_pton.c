@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "ares_private.h"
+#include "ci_private.h"
 
 #ifdef HAVE_NETINET_IN_H
 #  include <netinet/in.h>
@@ -27,10 +27,10 @@
 #  include <arpa/inet.h>
 #endif
 
-#include "ares_nameser.h"
+#include "ci_nameser.h"
 
-#include "ares_ipv6.h"
-#include "ares_inet_net_pton.h"
+#include "ci_ipv6.h"
+#include "ci_inet_net_pton.h"
 
 #ifdef USE_WINSOCK
 #  define SOCKERRNO        ((int)WSAGetLastError())
@@ -46,7 +46,7 @@
 #  define SET_SOCKERRNO(x) (errno = (x))
 #endif
 
-const struct ares_in6_addr ares_in6addr_any = { { { 0, 0, 0, 0, 0, 0, 0, 0, 0,
+const struct ci_in6_addr ci_in6addr_any = { { { 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                     0, 0, 0, 0, 0, 0, 0 } } };
 
 /*
@@ -70,7 +70,7 @@ const struct ares_in6_addr ares_in6addr_any = { { { 0, 0, 0, 0, 0, 0, 0, 0, 0,
  * author:
  *      Paul Vixie (ISC), June 1996
  */
-static int ares_inet_net_pton_ipv4(const char *src, unsigned char *dst,
+static int ci_inet_net_pton_ipv4(const char *src, unsigned char *dst,
                                    size_t size)
 {
   static const char    xdigits[] = "0123456789abcdef";
@@ -83,17 +83,17 @@ static int ares_inet_net_pton_ipv4(const char *src, unsigned char *dst,
   const unsigned char *odst = dst;
 
   ch = *src++;
-  if (ch == '0' && (src[0] == 'x' || src[0] == 'X') && ares_isascii(src[1]) &&
-      ares_isxdigit(src[1])) {
+  if (ch == '0' && (src[0] == 'x' || src[0] == 'X') && ci_isascii(src[1]) &&
+      ci_isxdigit(src[1])) {
     /* Hexadecimal: Eat nybble string. */
     if (!size) {
       goto emsgsize;
     }
     dirty = 0;
     src++; /* skip x or X. */
-    while ((ch = *src++) != '\0' && ares_isascii(ch) && ares_isxdigit(ch)) {
-      if (ares_isupper(ch)) {
-        ch = ares_tolower((unsigned char)ch);
+    while ((ch = *src++) != '\0' && ci_isascii(ch) && ci_isxdigit(ch)) {
+      if (ci_isupper(ch)) {
+        ch = ci_tolower((unsigned char)ch);
       }
       n = (int)(strchr(xdigits, ch) - xdigits);
       if (dirty == 0) {
@@ -115,7 +115,7 @@ static int ares_inet_net_pton_ipv4(const char *src, unsigned char *dst,
       }
       *dst++ = (unsigned char)(tmp << 4);
     }
-  } else if (ares_isascii(ch) && ares_isdigit(ch)) {
+  } else if (ci_isascii(ch) && ci_isdigit(ch)) {
     /* Decimal: eat dotted digit string. */
     for (;;) {
       tmp = 0;
@@ -126,7 +126,7 @@ static int ares_inet_net_pton_ipv4(const char *src, unsigned char *dst,
         if (tmp > 255) {
           goto enoent;
         }
-      } while ((ch = *src++) != '\0' && ares_isascii(ch) && ares_isdigit(ch));
+      } while ((ch = *src++) != '\0' && ci_isascii(ch) && ci_isdigit(ch));
       if (!size--) {
         goto emsgsize;
       }
@@ -138,7 +138,7 @@ static int ares_inet_net_pton_ipv4(const char *src, unsigned char *dst,
         goto enoent;
       }
       ch = *src++;
-      if (!ares_isascii(ch) || !ares_isdigit(ch)) {
+      if (!ci_isascii(ch) || !ci_isdigit(ch)) {
         goto enoent;
       }
     }
@@ -147,7 +147,7 @@ static int ares_inet_net_pton_ipv4(const char *src, unsigned char *dst,
   }
 
   bits = -1;
-  if (ch == '/' && ares_isascii(src[0]) && ares_isdigit(src[0]) && dst > odst) {
+  if (ch == '/' && ci_isascii(src[0]) && ci_isdigit(src[0]) && dst > odst) {
     /* CIDR width specifier.  Nothing can follow it. */
     ch   = *src++; /* Skip over the /. */
     bits = 0;
@@ -158,7 +158,7 @@ static int ares_inet_net_pton_ipv4(const char *src, unsigned char *dst,
       if (bits > 32) {
         goto enoent;
       }
-    } while ((ch = *src++) != '\0' && ares_isascii(ch) && ares_isdigit(ch));
+    } while ((ch = *src++) != '\0' && ci_isascii(ch) && ci_isdigit(ch));
     if (ch != '\0') {
       goto enoent;
     }
@@ -249,7 +249,7 @@ static int getbits(const char *src, size_t *bitsp)
   return 1;
 }
 
-static int ares_inet_pton6(const char *src, unsigned char *dst)
+static int ci_inet_pton6(const char *src, unsigned char *dst)
 {
   static const char xdigits_l[] = "0123456789abcdef";
   static const char xdigits_u[] = "0123456789ABCDEF";
@@ -317,7 +317,7 @@ static int ares_inet_pton6(const char *src, unsigned char *dst)
       continue;
     }
     if (ch == '.' && ((tp + NS_INADDRSZ) <= endp) &&
-        ares_inet_net_pton_ipv4(curtok, tp, NS_INADDRSZ) > 0) {
+        ci_inet_net_pton_ipv4(curtok, tp, NS_INADDRSZ) > 0) {
       tp         += NS_INADDRSZ;
       saw_xdigit  = 0;
       break; /* '\0' was seen by inet_pton4(). */
@@ -360,28 +360,28 @@ enoent:
   return -1;
 }
 
-static int ares_inet_net_pton_ipv6(const char *src, unsigned char *dst,
+static int ci_inet_net_pton_ipv6(const char *src, unsigned char *dst,
                                    size_t size)
 {
-  struct ares_in6_addr in6;
+  struct ci_in6_addr in6;
   int                  ret;
   size_t               bits;
   size_t               bytes;
   char                 buf[INET6_ADDRSTRLEN + sizeof("/128")];
   char                *sep;
 
-  if (ares_strlen(src) >= sizeof buf) {
+  if (ci_strlen(src) >= sizeof buf) {
     SET_SOCKERRNO(EMSGSIZE);
     return -1;
   }
-  ares_strcpy(buf, src, sizeof buf);
+  ci_strcpy(buf, src, sizeof buf);
 
   sep = strchr(buf, '/');
   if (sep != NULL) {
     *sep++ = '\0';
   }
 
-  ret = ares_inet_pton6(buf, (unsigned char *)&in6);
+  ret = ci_inet_pton6(buf, (unsigned char *)&in6);
   if (ret != 1) {
     return -1;
   }
@@ -418,19 +418,19 @@ static int ares_inet_net_pton_ipv6(const char *src, unsigned char *dst,
  *      Paul Vixie (ISC), June 1996
  *
  */
-int ares_inet_net_pton(int af, const char *src, void *dst, size_t size)
+int ci_inet_net_pton(int af, const char *src, void *dst, size_t size)
 {
   switch (af) {
     case AF_INET:
-      return ares_inet_net_pton_ipv4(src, dst, size);
+      return ci_inet_net_pton_ipv4(src, dst, size);
     case AF_INET6:
-      return ares_inet_net_pton_ipv6(src, dst, size);
+      return ci_inet_net_pton_ipv6(src, dst, size);
     default:
       return -1;
   }
 }
 
-int ares_inet_pton(int af, const char *src, void *dst)
+int ci_inet_pton(int af, const char *src, void *dst)
 {
   int    result;
   size_t size;
@@ -438,12 +438,12 @@ int ares_inet_pton(int af, const char *src, void *dst)
   if (af == AF_INET) {
     size = sizeof(struct in_addr);
   } else if (af == AF_INET6) {
-    size = sizeof(struct ares_in6_addr);
+    size = sizeof(struct ci_in6_addr);
   } else {
     SET_SOCKERRNO(EAFNOSUPPORT);
     return -1;
   }
-  result = ares_inet_net_pton(af, src, dst, size);
+  result = ci_inet_net_pton(af, src, dst, size);
   if (result == -1 && SOCKERRNO == ENOENT) {
     return 0;
   }

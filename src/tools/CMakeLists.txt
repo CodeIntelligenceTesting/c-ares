@@ -1,6 +1,6 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
-IF (CARES_BUILD_TOOLS)
+IF (CI_BUILD_TOOLS)
 	# Transform Makefile.inc
 	transform_makefile_inc("Makefile.inc" "${PROJECT_BINARY_DIR}/src/tools/Makefile.inc.cmake")
 	include(${PROJECT_BINARY_DIR}/src/tools/Makefile.inc.cmake)
@@ -24,14 +24,14 @@ IF (CARES_BUILD_TOOLS)
 		SET_TARGET_PROPERTIES (ahost PROPERTIES C_STANDARD 99)
 	ENDIF ()
 
-	TARGET_COMPILE_DEFINITIONS (ahost PRIVATE HAVE_CONFIG_H=1 CARES_NO_DEPRECATED)
+	TARGET_COMPILE_DEFINITIONS (ahost PRIVATE HAVE_CONFIG_H=1 CI_NO_DEPRECATED)
 	TARGET_LINK_LIBRARIES (ahost PRIVATE ${PROJECT_NAME})
 
 	# Avoid "fatal error C1041: cannot open program database" due to multiple
 	# targets trying to use the same PDB.  /FS does NOT resolve this issue.
 	SET_TARGET_PROPERTIES(ahost PROPERTIES COMPILE_PDB_NAME ahost.pdb)
 
-	IF (CARES_INSTALL)
+	IF (CI_INSTALL)
 		INSTALL (TARGETS ahost COMPONENT Tools ${TARGETS_INST_DEST})
 	ENDIF ()
 
@@ -58,14 +58,14 @@ IF (CARES_BUILD_TOOLS)
 		SET_TARGET_PROPERTIES (adig PROPERTIES C_STANDARD 99)
 	ENDIF ()
 
-	TARGET_COMPILE_DEFINITIONS (adig PRIVATE HAVE_CONFIG_H=1 CARES_NO_DEPRECATED)
+	TARGET_COMPILE_DEFINITIONS (adig PRIVATE HAVE_CONFIG_H=1 CI_NO_DEPRECATED)
 	TARGET_LINK_LIBRARIES (adig PRIVATE ${PROJECT_NAME})
 
 	# Avoid "fatal error C1041: cannot open program database" due to multiple
 	# targets trying to use the same PDB.  /FS does NOT resolve this issue.
 	SET_TARGET_PROPERTIES(adig PROPERTIES COMPILE_PDB_NAME adig.pdb)
 
-	IF (CARES_INSTALL)
+	IF (CI_INSTALL)
 		INSTALL (TARGETS adig COMPONENT Tools ${TARGETS_INST_DEST})
 	ENDIF ()
 ENDIF ()

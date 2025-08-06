@@ -9,7 +9,7 @@
 #   This macro checks whether the local system supports Linux user namespaces.
 #   If so, it calls AC_DEFINE(HAVE_USER_NAMESPACE).
 #
-# Copyright (C) The c-ares team
+# Copyright (C) The c-ci team
 # SPDX-License-Identifier: MIT
 
 AC_DEFUN([AX_CHECK_USER_NAMESPACE],[dnl

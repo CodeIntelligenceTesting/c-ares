@@ -1,6 +1,6 @@
 /* MIT License
  *
- * Copyright (c) The c-ares project and its contributors
+ * Copyright (c) The c-ci project and its contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-// Include ares internal file for DNS protocol details
-#include "ares_setup.h"
-#include "ares.h"
-#include "ares_dns.h"
+// Include ci internal file for DNS protocol details
+#include "ci_setup.h"
+#include "ci.h"
+#include "ci_dns.h"
 #include "dns-proto.h"
 
 #include <stdio.h>
@@ -40,7 +40,7 @@
 #  define strcasecmp(a,b) stricmp(a,b)
 #endif
 
-void arestest_strtolower(char *dest, const char *src, size_t dest_size)
+void citest_strtolower(char *dest, const char *src, size_t dest_size)
 {
   size_t len;
 
@@ -62,7 +62,7 @@ void arestest_strtolower(char *dest, const char *src, size_t dest_size)
 }
 
 
-namespace ares {
+namespace ci {
 
 std::string HexDump(std::vector<byte> data) {
   std::stringstream ss;
@@ -84,31 +84,31 @@ std::string HexDump(const char *data, int len) {
 
 std::string StatusToString(int status) {
   switch (status) {
-  case ARES_SUCCESS: return "ARES_SUCCESS";
-  case ARES_ENODATA: return "ARES_ENODATA";
-  case ARES_EFORMERR: return "ARES_EFORMERR";
-  case ARES_ESERVFAIL: return "ARES_ESERVFAIL";
-  case ARES_ENOTFOUND: return "ARES_ENOTFOUND";
-  case ARES_ENOTIMP: return "ARES_ENOTIMP";
-  case ARES_EREFUSED: return "ARES_EREFUSED";
-  case ARES_EBADQUERY: return "ARES_EBADQUERY";
-  case ARES_EBADNAME: return "ARES_EBADNAME";
-  case ARES_EBADFAMILY: return "ARES_EBADFAMILY";
-  case ARES_EBADRESP: return "ARES_EBADRESP";
-  case ARES_ECONNREFUSED: return "ARES_ECONNREFUSED";
-  case ARES_ETIMEOUT: return "ARES_ETIMEOUT";
-  case ARES_EOF: return "ARES_EOF";
-  case ARES_EFILE: return "ARES_EFILE";
-  case ARES_ENOMEM: return "ARES_ENOMEM";
-  case ARES_EDESTRUCTION: return "ARES_EDESTRUCTION";
-  case ARES_EBADSTR: return "ARES_EBADSTR";
-  case ARES_EBADFLAGS: return "ARES_EBADFLAGS";
-  case ARES_ENONAME: return "ARES_ENONAME";
-  case ARES_EBADHINTS: return "ARES_EBADHINTS";
-  case ARES_ENOTINITIALIZED: return "ARES_ENOTINITIALIZED";
-  case ARES_ELOADIPHLPAPI: return "ARES_ELOADIPHLPAPI";
-  case ARES_EADDRGETNETWORKPARAMS: return "ARES_EADDRGETNETWORKPARAMS";
-  case ARES_ECANCELLED: return "ARES_ECANCELLED";
+  case CI_SUCCESS: return "CI_SUCCESS";
+  case CI_ENODATA: return "CI_ENODATA";
+  case CI_EFORMERR: return "CI_EFORMERR";
+  case CI_ESERVFAIL: return "CI_ESERVFAIL";
+  case CI_ENOTFOUND: return "CI_ENOTFOUND";
+  case CI_ENOTIMP: return "CI_ENOTIMP";
+  case CI_EREFUSED: return "CI_EREFUSED";
+  case CI_EBADQUERY: return "CI_EBADQUERY";
+  case CI_EBADNAME: return "CI_EBADNAME";
+  case CI_EBADFAMILY: return "CI_EBADFAMILY";
+  case CI_EBADRESP: return "CI_EBADRESP";
+  case CI_ECONNREFUSED: return "CI_ECONNREFUSED";
+  case CI_ETIMEOUT: return "CI_ETIMEOUT";
+  case CI_EOF: return "CI_EOF";
+  case CI_EFILE: return "CI_EFILE";
+  case CI_ENOMEM: return "CI_ENOMEM";
+  case CI_EDESTRUCTION: return "CI_EDESTRUCTION";
+  case CI_EBADSTR: return "CI_EBADSTR";
+  case CI_EBADFLAGS: return "CI_EBADFLAGS";
+  case CI_ENONAME: return "CI_ENONAME";
+  case CI_EBADHINTS: return "CI_EBADHINTS";
+  case CI_ENOTINITIALIZED: return "CI_ENOTINITIALIZED";
+  case CI_ELOADIPHLPAPI: return "CI_ELOADIPHLPAPI";
+  case CI_EADDRGETNETWORKPARAMS: return "CI_EADDRGETNETWORKPARAMS";
+  case CI_ECANCELLED: return "CI_ECANCELLED";
   default: return "UNKNOWN";
   }
 }
@@ -288,9 +288,9 @@ std::string QuestionToString(const std::vector<byte>& packet,
 
   char *name = nullptr;
   long enclen;
-  int rc = ares_expand_name(*data, packet.data(), (int)packet.size(), &name, &enclen);
-  if (rc != ARES_SUCCESS) {
-    ss << "(error from ares_expand_name)";
+  int rc = ci_expand_name(*data, packet.data(), (int)packet.size(), &name, &enclen);
+  if (rc != CI_SUCCESS) {
+    ss << "(error from ci_expand_name)";
     return ss.str();
   }
   if (enclen > *len) {
@@ -303,8 +303,8 @@ std::string QuestionToString(const std::vector<byte>& packet,
   // DNS 0x20 may mix case, output as all lower for checks as the mixed case
   // is really more of an internal thing
   char lowername[256];
-  arestest_strtolower(lowername, name, sizeof(lowername));
-  ares_free_string(name);
+  citest_strtolower(lowername, name, sizeof(lowername));
+  ci_free_string(name);
 
   ss << "'" << lowername << "' ";
   if (*len < NS_QFIXEDSZ) {
@@ -330,9 +330,9 @@ std::string RRToString(const std::vector<byte>& packet,
 
   char *name = nullptr;
   long enclen;
-  int rc = ares_expand_name(*data, packet.data(), (int)packet.size(), &name, &enclen);
-  if (rc != ARES_SUCCESS) {
-    ss << "(error from ares_expand_name)";
+  int rc = ci_expand_name(*data, packet.data(), (int)packet.size(), &name, &enclen);
+  if (rc != CI_SUCCESS) {
+    ss << "(error from ci_expand_name)";
     return ss.str();
   }
   if (enclen > *len) {
@@ -342,7 +342,7 @@ std::string RRToString(const std::vector<byte>& packet,
   *len -= (int)enclen;
   *data += enclen;
   ss << "'" << name << "' ";
-  ares_free_string(name);
+  ci_free_string(name);
   name = nullptr;
 
   if (*len < NS_RRFIXEDSZ) {
@@ -388,24 +388,24 @@ std::string RRToString(const std::vector<byte>& packet,
     case T_CNAME:
     case T_NS:
     case T_PTR: {
-      rc = ares_expand_name(*data, packet.data(), (int)packet.size(), &name, &enclen);
-      if (rc != ARES_SUCCESS) {
-        ss << "(error from ares_expand_name)";
+      rc = ci_expand_name(*data, packet.data(), (int)packet.size(), &name, &enclen);
+      if (rc != CI_SUCCESS) {
+        ss << "(error from ci_expand_name)";
         break;
       }
       ss << " '" << name << "'";
-      ares_free_string(name);
+      ci_free_string(name);
       break;
     }
     case T_MX:
       if (rdatalen > 2) {
-        rc = ares_expand_name(*data + 2, packet.data(), (int)packet.size(), &name, &enclen);
-        if (rc != ARES_SUCCESS) {
-          ss << "(error from ares_expand_name)";
+        rc = ci_expand_name(*data + 2, packet.data(), (int)packet.size(), &name, &enclen);
+        if (rc != CI_SUCCESS) {
+          ss << "(error from ci_expand_name)";
           break;
         }
         ss << " " << DNS__16BIT(*data) << " '" << name << "'";
-        ares_free_string(name);
+        ci_free_string(name);
       } else {
         ss << "(RR too short)";
       }
@@ -417,13 +417,13 @@ std::string RRToString(const std::vector<byte>& packet,
         unsigned long weight = DNS__16BIT(p + 2);
         unsigned long port = DNS__16BIT(p + 4);
         p += 6;
-        rc = ares_expand_name(p, packet.data(), (int)packet.size(), &name, &enclen);
-        if (rc != ARES_SUCCESS) {
-          ss << "(error from ares_expand_name)";
+        rc = ci_expand_name(p, packet.data(), (int)packet.size(), &name, &enclen);
+        if (rc != CI_SUCCESS) {
+          ss << "(error from ci_expand_name)";
           break;
         }
         ss << prio << " " << weight << " " << port << " '" << name << "'";
-        ares_free_string(name);
+        ci_free_string(name);
       } else {
         ss << "(RR too short)";
       }
@@ -444,21 +444,21 @@ std::string RRToString(const std::vector<byte>& packet,
     }
     case T_SOA: {
       const byte* p = *data;
-      rc = ares_expand_name(p, packet.data(), (int)packet.size(), &name, &enclen);
-      if (rc != ARES_SUCCESS) {
-        ss << "(error from ares_expand_name)";
+      rc = ci_expand_name(p, packet.data(), (int)packet.size(), &name, &enclen);
+      if (rc != CI_SUCCESS) {
+        ss << "(error from ci_expand_name)";
         break;
       }
       ss << " '" << name << "'";
-      ares_free_string(name);
+      ci_free_string(name);
       p += enclen;
-      rc = ares_expand_name(p, packet.data(), (int)packet.size(), &name, &enclen);
-      if (rc != ARES_SUCCESS) {
-        ss << "(error from ares_expand_name)";
+      rc = ci_expand_name(p, packet.data(), (int)packet.size(), &name, &enclen);
+      if (rc != CI_SUCCESS) {
+        ss << "(error from ci_expand_name)";
         break;
       }
       ss << " '" << name << "'";
-      ares_free_string(name);
+      ci_free_string(name);
       p += enclen;
       if ((p + 20) <= (*data + rdatalen)) {
         unsigned long serial = DNS__32BIT(p);
@@ -495,13 +495,13 @@ std::string RRToString(const std::vector<byte>& packet,
         ss << " '" << regexp << "'";
         p += nlen;
 
-        rc = ares_expand_name(p, packet.data(), (int)packet.size(), &name, &enclen);
-        if (rc != ARES_SUCCESS) {
-          ss << "(error from ares_expand_name)";
+        rc = ci_expand_name(p, packet.data(), (int)packet.size(), &name, &enclen);
+        if (rc != CI_SUCCESS) {
+          ss << "(error from ci_expand_name)";
           break;
         }
         ss << " '" << name << "'";
-        ares_free_string(name);
+        ci_free_string(name);
       } else {
         ss << "(RR too short)";
       }
@@ -548,7 +548,7 @@ std::vector<byte> EncodeString(const std::string &name) {
   return data;
 }
 
-std::vector<byte> DNSQuestion::data(const char *request_name, const ares_dns_record_t *dnsrec) const {
+std::vector<byte> DNSQuestion::data(const char *request_name, const ci_dns_record_t *dnsrec) const {
   std::vector<byte> data;
   std::vector<byte> encname;
   if (request_name != nullptr && strcasecmp(request_name, name_.c_str()) == 0) {
@@ -562,13 +562,13 @@ std::vector<byte> DNSQuestion::data(const char *request_name, const ares_dns_rec
   return data;
 }
 
-std::vector<byte> DNSRR::data(const ares_dns_record_t *dnsrec) const {
+std::vector<byte> DNSRR::data(const ci_dns_record_t *dnsrec) const {
   std::vector<byte> data = DNSQuestion::data(dnsrec);
   PushInt32(&data, ttl_);
   return data;
 }
 
-std::vector<byte> DNSSingleNameRR::data(const ares_dns_record_t *dnsrec) const {
+std::vector<byte> DNSSingleNameRR::data(const ci_dns_record_t *dnsrec) const {
   std::vector<byte> data = DNSRR::data(dnsrec);
   std::vector<byte> encname = EncodeString(other_);
   int len = (int)encname.size();
@@ -577,7 +577,7 @@ std::vector<byte> DNSSingleNameRR::data(const ares_dns_record_t *dnsrec) const {
   return data;
 }
 
-std::vector<byte> DNSTxtRR::data(const ares_dns_record_t *dnsrec) const {
+std::vector<byte> DNSTxtRR::data(const ci_dns_record_t *dnsrec) const {
   std::vector<byte> data = DNSRR::data(dnsrec);
   int len = 0;
   for (const std::string& txt : txt_) {
@@ -591,7 +591,7 @@ std::vector<byte> DNSTxtRR::data(const ares_dns_record_t *dnsrec) const {
   return data;
 }
 
-std::vector<byte> DNSMxRR::data(const ares_dns_record_t *dnsrec) const {
+std::vector<byte> DNSMxRR::data(const ci_dns_record_t *dnsrec) const {
   std::vector<byte> data = DNSRR::data(dnsrec);
   std::vector<byte> encname = EncodeString(other_);
   int len = 2 + (int)encname.size();
@@ -601,7 +601,7 @@ std::vector<byte> DNSMxRR::data(const ares_dns_record_t *dnsrec) const {
   return data;
 }
 
-std::vector<byte> DNSSrvRR::data(const ares_dns_record_t *dnsrec) const {
+std::vector<byte> DNSSrvRR::data(const ci_dns_record_t *dnsrec) const {
   std::vector<byte> data = DNSRR::data(dnsrec);
   std::vector<byte> encname = EncodeString(target_);
   int len = 6 + (int)encname.size();
@@ -613,7 +613,7 @@ std::vector<byte> DNSSrvRR::data(const ares_dns_record_t *dnsrec) const {
   return data;
 }
 
-std::vector<byte> DNSUriRR::data(const ares_dns_record_t *dnsrec) const {
+std::vector<byte> DNSUriRR::data(const ci_dns_record_t *dnsrec) const {
   std::vector<byte> data = DNSRR::data(dnsrec);
   int len = 4 + (int)target_.size();
   PushInt16(&data, len);
@@ -623,7 +623,7 @@ std::vector<byte> DNSUriRR::data(const ares_dns_record_t *dnsrec) const {
   return data;
 }
 
-std::vector<byte> DNSAddressRR::data(const ares_dns_record_t *dnsrec) const {
+std::vector<byte> DNSAddressRR::data(const ci_dns_record_t *dnsrec) const {
   std::vector<byte> data = DNSRR::data(dnsrec);
   int len = (int)addr_.size();
   PushInt16(&data, len);
@@ -631,7 +631,7 @@ std::vector<byte> DNSAddressRR::data(const ares_dns_record_t *dnsrec) const {
   return data;
 }
 
-std::vector<byte> DNSSoaRR::data(const ares_dns_record_t *dnsrec) const {
+std::vector<byte> DNSSoaRR::data(const ci_dns_record_t *dnsrec) const {
   std::vector<byte> data = DNSRR::data(dnsrec);
   std::vector<byte> encname1 = EncodeString(nsname_);
   std::vector<byte> encname2 = EncodeString(rname_);
@@ -647,29 +647,29 @@ std::vector<byte> DNSSoaRR::data(const ares_dns_record_t *dnsrec) const {
   return data;
 }
 
-const ares_dns_rr_t *fetch_rr_opt(const ares_dns_record_t *rec)
+const ci_dns_rr_t *fetch_rr_opt(const ci_dns_record_t *rec)
 {
   size_t i;
-  for (i = 0; i < ares_dns_record_rr_cnt(rec, ARES_SECTION_ADDITIONAL); i++) {
-    const ares_dns_rr_t *rr =
-      ares_dns_record_rr_get_const(rec, ARES_SECTION_ADDITIONAL, i);
+  for (i = 0; i < ci_dns_record_rr_cnt(rec, CI_SECTION_ADDITIONAL); i++) {
+    const ci_dns_rr_t *rr =
+      ci_dns_record_rr_get_const(rec, CI_SECTION_ADDITIONAL, i);
 
-    if (ares_dns_rr_get_type(rr) == ARES_REC_TYPE_OPT) {
+    if (ci_dns_rr_get_type(rr) == CI_REC_TYPE_OPT) {
       return rr;
     }
   }
   return NULL;
 }
 
-std::vector<byte> DNSOptRR::data(const ares_dns_record_t *dnsrec) const {
+std::vector<byte> DNSOptRR::data(const ci_dns_record_t *dnsrec) const {
   std::vector<byte>    data = DNSRR::data(dnsrec);
   int len                   = 0;
   std::vector<byte>    cookie;
-  const ares_dns_rr_t *rr  = fetch_rr_opt(dnsrec);
+  const ci_dns_rr_t *rr  = fetch_rr_opt(dnsrec);
   size_t               passed_cookie_len = 0;
   const unsigned char *passed_cookie = NULL;
 
-  ares_dns_rr_get_opt_byid(rr, ARES_RR_OPT_OPTIONS, ARES_OPT_PARAM_COOKIE,
+  ci_dns_rr_get_opt_byid(rr, CI_RR_OPT_OPTIONS, CI_OPT_PARAM_COOKIE,
                            &passed_cookie, &passed_cookie_len);
 
   /* Error out if we expected a server cookie but didn't get one, or if the
@@ -712,7 +712,7 @@ std::vector<byte> DNSOptRR::data(const ares_dns_record_t *dnsrec) const {
   }
 
   if (cookie.size()) {
-    PushInt16(&data, ARES_OPT_PARAM_COOKIE);
+    PushInt16(&data, CI_OPT_PARAM_COOKIE);
     PushInt16(&data, (int)cookie.size());
     data.insert(data.end(), cookie.begin(), cookie.end());
   }
@@ -720,7 +720,7 @@ std::vector<byte> DNSOptRR::data(const ares_dns_record_t *dnsrec) const {
   return data;
 }
 
-std::vector<byte> DNSNaptrRR::data(const ares_dns_record_t *dnsrec) const {
+std::vector<byte> DNSNaptrRR::data(const ci_dns_record_t *dnsrec) const {
   std::vector<byte> data = DNSRR::data(dnsrec);
   std::vector<byte> encname = EncodeString(replacement_);
   int len = (4 + 1 + (int)flags_.size() + 1 + (int)service_.size() + 1 + (int)regexp_.size() + (int)encname.size());
@@ -737,7 +737,7 @@ std::vector<byte> DNSNaptrRR::data(const ares_dns_record_t *dnsrec) const {
   return data;
 }
 
-std::vector<byte> DNSPacket::data(const char *request_name, const ares_dns_record_t *dnsrec) const {
+std::vector<byte> DNSPacket::data(const char *request_name, const ci_dns_record_t *dnsrec) const {
   std::vector<byte> data;
   PushInt16(&data, qid_);
   byte b = 0x00;
@@ -799,4 +799,4 @@ std::vector<byte> DNSPacket::data(const char *request_name, const ares_dns_recor
   return data;
 }
 
-}  // namespace ares
+}  // namespace ci

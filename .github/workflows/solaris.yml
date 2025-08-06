@@ -1,4 +1,4 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 name: Solaris
 
@@ -17,8 +17,8 @@ jobs:
     env:
       DIST: SOLARIS
       BUILD_TYPE: "cmake"
-      CMAKE_FLAGS: "-DCMAKE_BUILD_TYPE=DEBUG -DCARES_STATIC=ON -DCARES_STATIC_PIC=ON"
-      CMAKE_TEST_FLAGS: "-DCMAKE_PREFIX_PATH=/usr/local/ -DCARES_BUILD_TESTS=ON -DCMAKE_CXX_FLAGS=-DGTEST_HAS_PTHREAD=0"
+      CMAKE_FLAGS: "-DCMAKE_BUILD_TYPE=DEBUG -DCI_STATIC=ON -DCI_STATIC_PIC=ON"
+      CMAKE_TEST_FLAGS: "-DCMAKE_PREFIX_PATH=/usr/local/ -DCI_BUILD_TESTS=ON -DCMAKE_CXX_FLAGS=-DGTEST_HAS_PTHREAD=0"
       TEST_FILTER: "--gtest_filter=-*Live*"
       TEST_DEBUGGER: "gdb"
     steps:
@@ -40,7 +40,7 @@ jobs:
           #  - We have to forcibly compile google test without threading because
           #    solaris throws an exception for some unknown reason.
           #  - The forcible threading disablement doesn't appear to propagate to
-          #    proper cflags with compiling c-ares tests so we need to set a
+          #    proper cflags with compiling c-ci tests so we need to set a
           #    CXX flag to let google test know it was compiled without threading.
           #  - NOTE: v1.15.x is the latest version available at the time of this
           #          writing.

@@ -1,4 +1,4 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 name: OpenWatcom
 on:
@@ -20,7 +20,7 @@ jobs:
       - name: configure
         run: buildconf.bat
         shell: cmd
-      - name: Build c-ares
+      - name: Build c-ci
         run: |
           wmake -u -f Makefile.Watcom
       - name: distclean

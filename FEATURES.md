@@ -14,7 +14,7 @@
 
 Metrics are stored for every server in time series buckets for both the current
 time span and prior time span in 1 minute, 15 minute, 1 hour, and 1 day
-intervals, plus a single since-inception bucket (of the server in the c-ares
+intervals, plus a single since-inception bucket (of the server in the c-ci
 channel).
 
 These metrics are then used to calculate the average latency for queries on
@@ -22,13 +22,13 @@ each server, which automatically adjusts to network conditions.  This average
 is then multiplied by 5 to come up with a timeout to use for the query before
 re-queuing it.  If there is not sufficient data yet to calculate a timeout
 (need at least 3 prior queries), then the default of 2000ms is used (or an 
-administrator-set `ARES_OPT_TIMEOUTMS`).
+administrator-set `CI_OPT_TIMEOUTMS`).
 
 The timeout is then adjusted to a minimum bound of 250ms which is the
 approximate RTT of network traffic half-way around the world, to account for the
 upstream server needing to recurse to a DNS server far away.  It is also
 bounded on the upper end to 5000ms (or an administrator-set 
-`ARES_OPT_MAXTIMEOUTMS`).
+`CI_OPT_MAXTIMEOUTMS`).
 
 If a server does not reply within the given calculated timeout, the next time
 the query is re-queued to the same server, the timeout will approximately
@@ -36,12 +36,12 @@ double thus leading to adjustments in timeouts automatically when a successful
 reply is recorded.
 
 In order to calculate the optimal timeout, it is highly recommended to ensure
-`ARES_OPT_QUERY_CACHE` is enabled with a non-zero `qcache_max_ttl` (which it
+`CI_OPT_QUERY_CACHE` is enabled with a non-zero `qcache_max_ttl` (which it
 is enabled by default with a 3600s default max ttl).  The goal is to record
 the recursion time as part of query latency as the upstream server will also
 cache results.
 
-This feature requires the c-ares channel to persist for the lifetime of the
+This feature requires the c-ci channel to persist for the lifetime of the
 application.
 
 
@@ -61,14 +61,14 @@ means that probing a downed server will always use an intended legitimate
 query, but not have a negative impact of a delayed response in case that server
 is still down.
 
-Administrators may customize these settings via `ARES_OPT_SERVER_FAILOVER`.
+Administrators may customize these settings via `CI_OPT_SERVER_FAILOVER`.
 
-Additionally, when using `ARES_OPT_ROTATE` or a system configuration option of
-`rotate`, c-ares will randomly select a server from the list of highest priority
+Additionally, when using `CI_OPT_ROTATE` or a system configuration option of
+`rotate`, c-ci will randomly select a server from the list of highest priority
 servers based on failures.  Any servers in any lower priority bracket will be
 omitted from the random selection.
 
-This feature requires the c-ares channel to persist for the lifetime of the
+This feature requires the c-ci channel to persist for the lifetime of the
 application.
 
 
@@ -76,11 +76,11 @@ application.
 
 Every successful query response, as well as `NXDOMAIN` responses containing
 an `SOA` record are cached using the `TTL` returned or the SOA Minimum as
-appropriate.  This timeout is bounded by the `ARES_OPT_QUERY_CACHE`
+appropriate.  This timeout is bounded by the `CI_OPT_QUERY_CACHE`
 `qcache_max_ttl`, which defaults to 1hr.
 
 The query is cached at the lowest possible layer, meaning a call into
-`ares_search_dnsrec()` or `ares_getaddrinfo()` may spawn multiple queries
+`ci_search_dnsrec()` or `ci_getaddrinfo()` may spawn multiple queries
 in order to complete its lookup, each individual backend query result will
 be cached.
 
@@ -94,7 +94,7 @@ present due to the upstream DNS server having substantially similar caching
 already.  However if desired it can be disabled by setting `qcache_max_ttl` to
 `0`.
 
-This feature requires the c-ares channel to persist for the lifetime of the
+This feature requires the c-ci channel to persist for the lifetime of the
 application.
 
 
@@ -117,7 +117,7 @@ Much research has been performed by
 on case randomization and in general have found it to be effective and widely
 supported.
 
-This feature is disabled by default and can be enabled via `ARES_FLAG_DNS0x20`.
+This feature is disabled by default and can be enabled via `CI_FLAG_DNS0x20`.
 There are some instances where servers do not properly facilitate this feature
 and unlike in a recursive resolver where it may be possible to determine an
 authoritative server is incapable, its much harder to come to any reliable
@@ -155,7 +155,7 @@ Interestingly, the large public recursive DNS servers such as provided by
 most DNS products like [BIND](https://www.isc.org/bind/) enable DNS Cookies
 by default.
 
-This feature requires the c-ares channel to persist for the lifetime of the
+This feature requires the c-ci channel to persist for the lifetime of the
 application.
 
 
@@ -175,7 +175,7 @@ nature.
 
 TCP FastOpen is supported on Linux, MacOS, and FreeBSD. Most other systems do
 not support this feature, or like on Windows require use of completion
-notifications to use it whereas c-ares relies on readiness notifications.
+notifications to use it whereas c-ci relies on readiness notifications.
 
 Supported systems also need to be configured appropriately on both the client
 and server systems.
@@ -218,9 +218,9 @@ Once the file is modified, it can be loaded via `sysctl -f /etc/sysctl.conf`.
 
 ## Event Thread
 
-Historic c-ares integrations required integrators to have their own event loop
-which would be required to notify c-ares of read and write events for each
-socket.  It was also required to notify c-ares at the appropriate timeout if
+Historic c-ci integrations required integrators to have their own event loop
+which would be required to notify c-ci of read and write events for each
+socket.  It was also required to notify c-ci at the appropriate timeout if
 no events had occurred.  This could be difficult to do correctly and could
 lead to stalls or other issues.
 
@@ -228,13 +228,13 @@ The Event Thread is currently supported on all systems except DOS which does
 not natively support threading (however it could in theory be possible to
 enable with something like [FSUpthreads](https://arcb.csc.ncsu.edu/~mueller/pthreads/)).
 
-c-ares is built by default with threading support enabled, however it may
+c-ci is built by default with threading support enabled, however it may
 disabled at compile time.  The event thread must also be specifically enabled
-via `ARES_OPT_EVENT_THREAD`.
+via `CI_OPT_EVENT_THREAD`.
 
 Using the Event Thread feature also facilitates some other features like
 [System Configuration Change Monitoring](#system-configuration-change-monitoring),
-and automatically enables the `ares_set_pending_write_cb()` feature to optimize
+and automatically enables the `ci_set_pending_write_cb()` feature to optimize
 multi-query writing.
 
 
@@ -242,11 +242,11 @@ multi-query writing.
 
 The system configuration is automatically monitored for changes to the network
 and DNS settings.  When a change is detected a thread is spawned to read the
-new configuration then apply it to the current c-ares configuration.
+new configuration then apply it to the current c-ci configuration.
 
 This feature requires the [Event Thread](#event-thread) to be enabled via
-`ARES_OPT_EVENT_THREAD`.  Otherwise it is up to the integrator to do their own
-configuration monitoring and call `ares_reinit()` to reload the system
+`CI_OPT_EVENT_THREAD`.  Otherwise it is up to the integrator to do their own
+configuration monitoring and call `ci_reinit()` to reload the system
 configuration.
 
 It is supported on Windows, MacOS, iOS and any system configuration that uses
@@ -256,5 +256,5 @@ feature.  On linux file monitoring will result in immediate change detection,
 however on other unix-like systems a polling mechanism is used that checks every
 30s for changes.
 
-This feature requires the c-ares channel to persist for the lifetime of the
+This feature requires the c-ci channel to persist for the lifetime of the
 application.

@@ -1,0 +1,34 @@
+.\"
+.\" Copyright (C) Daniel Stenberg
+.\" SPDX-License-Identifier: MIT
+.\"
+.TH CI_SET_SOCKET_CALLBACK 3 "20 Nov 2009"
+.SH NAME
+ci_set_socket_callback \- Set a socket creation callback
+.SH SYNOPSIS
+.nf
+#include <ci.h>
+
+typedef int (*ci_sock_create_callback)(ci_socket_t \fIsocket_fd\fP,
+                                         int \fItype\fP,
+                                         void *\fIuserdata\fP)
+
+void ci_set_socket_callback(ci_channel_t *\fIchannel\fP,
+                              ci_sock_create_callback \fIcallback\fP,
+                              void *\fIuserdata\fP)
+.PP
+.B cc file.c -lcci
+.fi
+.SH DESCRIPTION
+.PP
+This function sets a \fIcallback\fP in the given ci channel handle. This
+callback function will be invoked after the socket has been created, and
+connected to the remote server. The callback must return CI_SUCCESS if
+things are fine, or return -1 to signal an error. A returned error will
+abort the ci operation.
+.SH SEE ALSO
+.BR ci_init_options (3),
+.BR ci_set_socket_configure_callback (3)
+.SH AVAILABILITY
+ci_set_socket_callback(3) was added in c-ci 1.6.0
+

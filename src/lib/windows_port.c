@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: MIT
  *
  */
-#include "ares_private.h"
+#include "ci_private.h"
 
 
 /* only do the following on windows

@@ -1,0 +1,307 @@
+.\" Copyright (C) 2023 The c-ci project and its contributors.
+.\" SPDX-License-Identifier: MIT
+.\"
+.TH CI_DNS_MAPPINGS 3 "12 November 2023"
+.SH NAME
+ci_dns_class_fromstr, ci_dns_class_tostr, ci_dns_datatype_t, ci_dns_opcode_tostr,
+ci_dns_opt_datatype_t, ci_dns_opt_get_datatype, ci_dns_opt_get_name,
+ci_dns_rcode_tostr, ci_dns_rec_type_fromstr, ci_dns_rr_get_keys,
+ci_dns_rr_key_datatype, ci_dns_rr_key_to_rec_type, ci_dns_rr_key_tostr,
+ci_dns_section_tostr, ci_opt_param_t, ci_svcb_param_t \-
+Helper functions for converting dns record identifiers to and from their
+respective types, as well identifying datatypes for various records.
+.SH SYNOPSIS
+.nf
+#include <ci.h>
+
+const char *ci_dns_rec_type_tostr(ci_dns_rec_type_t type);
+
+const char *ci_dns_class_tostr(ci_dns_class_t qclass);
+
+const char *ci_dns_opcode_tostr(ci_dns_opcode_t opcode);
+
+const char *ci_dns_rr_key_tostr(ci_dns_rr_key_t key);
+
+const char *ci_dns_section_tostr(ci_dns_section_t section);
+
+const char *ci_dns_rcode_tostr(ci_dns_rcode_t rcode);
+
+ci_bool_t ci_dns_class_fromstr(ci_dns_class_t *qclass, const char *str);
+
+ci_bool_t ci_dns_rec_type_fromstr(ci_dns_rec_type_t *qtype,
+                                      const char *str);
+
+const ci_dns_rr_key_t *ci_dns_rr_get_keys(ci_dns_rec_type_t type,
+                                              size_t *cnt);
+
+ci_dns_datatype_t ci_dns_rr_key_datatype(ci_dns_rr_key_t key);
+
+ci_dns_rec_type_t ci_dns_rr_key_to_rec_type(ci_dns_rr_key_t key);
+
+ci_dns_opt_datatype_t ci_dns_opt_get_datatype(ci_dns_rr_key_t key,
+                                                  unsigned short opt);
+
+const char *ci_dns_opt_get_name(ci_dns_rr_key_t key, unsigned short opt);
+
+.fi
+.SH ENUMERATIONS
+.B ci_dns_datatype_t -
+Data types associated with \fIci_dns_rr_key_t\fP:
+.RS 4
+.B CI_DATATYPE_INADDR
+- IPv4 address as \fIstruct in_addr *\fP. Use \fIci_dns_rr_set_addr(3)\fP to
+set and \fIci_dns_rr_get_addr(3)\fP to get.
+.br
+.B CI_DATATYPE_INADDR6
+- IPv6 address as \fIstruct ci_in6_addr *\fP. Use \fIci_dns_rr_set_addr6(3)\fP to
+set and \fIci_dns_rr_get_addr6(3)\fP to get.
+.br
+.B CI_DATATYPE_U8
+- 8bit unsigned integer. Use \fIci_dns_rr_set_u8(3)\fP to
+set and \fIci_dns_rr_get_u8(3)\fP to get.
+.br
+.B CI_DATATYPE_U16
+- 16bit unsigned integer. Use \fIci_dns_rr_set_u16(3)\fP to
+set and \fIci_dns_rr_get_u16(3)\fP to get.
+.br
+.B CI_DATATYPE_U32
+- 32bit unsigned integer. Use \fIci_dns_rr_set_u32(3)\fP to
+set and \fIci_dns_rr_get_u32(3)\fP to get.
+.br
+.B CI_DATATYPE_NAME
+- Null-terminated string of a domain name (series of labels). Use \fIci_dns_rr_set_str(3)\fP to
+set and \fIci_dns_rr_get_str(3)\fP to get.
+.br
+.B CI_DATATYPE_STR
+- Null-terminated string. Use \fIci_dns_rr_set_str(3)\fP to
+set and \fIci_dns_rr_get_str(3)\fP to get.
+.br
+.B CI_DATATYPE_BIN
+- Binary Data. Use \fIci_dns_rr_set_bin(3)\fP to
+set and \fIci_dns_rr_get_bin(3)\fP to get.
+.br
+.B CI_DATATYPE_BINP
+- Officially defined as binary data, but likely printable. Guaranteed to have
+a NULL terminator for convenience (not included in length). Use \fIci_dns_rr_set_bin(3)\fP to
+set and \fIci_dns_rr_get_bin(3)\fP to get.
+.br
+.B CI_DATATYPE_OPT
+- Array of options.  16bit identifier, Binary data. Use \fIci_dns_rr_set_opt(3)\fP to
+set and \fIci_dns_rr_get_opt(3)\fP to get.
+.br
+.B CI_DATATYPE_ABINP
+- Array of binary data, but likely printable. Guaranteed to have a NULL terminator
+for convenience (not included in length). Use \fIci_dns_rr_add_abin(3)\fP to
+set and \fIci_dns_rr_get_abin(3)\fP to get.  Can also use
+\fIci_dns_rr_set_bin(3)\fP and \fIci_dns_rr_get_bin(3)\fP if only concatenated
+strings are desired.
+.br
+.RE
+
+.B ci_dns_opt_datatype_t -
+Data types associated with \fICI_DATATYPE_OPT\fP parameters if known as returned
+by \fIci_dns_opt_get_datatype(3)\fP:
+.RS 4
+.B CI_OPT_DATATYPE_NONE
+- No value allowed for this parameter
+.br
+.B CI_OPT_DATATYPE_STR_LIST
+- List of strings, each prefixed with a single octet representing the length as
+defined by RFC 1035. Can use \fIci_expand_string(3)\fP until buffer is consumed.
+.br
+.B CI_OPT_DATATYPE_U8_LIST
+- List of 8bit unsigned integers, concatenated
+.br
+.B CI_OPT_DATATYPE_U16
+- 16bit unsigned integer in network byte order
+.br
+.B CI_OPT_DATATYPE_U16_LIST
+- list of 16bit unsigned integers in network byte order, concatenated.
+.br
+.B CI_OPT_DATATYPE_U32
+- 32bit unsigned integer in network byte order
+.br
+.B CI_OPT_DATATYPE_U32_LIST
+- list of 16bit unsigned integers in network byte order, concatenated.
+.br
+.B CI_OPT_DATATYPE_INADDR4_LIST
+- List of ipv4 addresses in network byte order, concatenated
+.br
+.B CI_OPT_DATATYPE_INADDR6_LIST
+- List of ipv6 addresses in network byte order, concatenated
+.br
+.B CI_OPT_DATATYPE_BIN
+- Binary Data
+.br
+.B CI_OPT_DATATYPE_NAME
+- DNS Domain Name binary format as defined in RFC1035, can use \fIci_expand_name(3)\fP
+.br
+.RE
+
+.B ci_svcb_param_t -
+SVCB (and HTTPS) RR known parameters as returned by \fIci_dns_opt_get_datatype(3)\fP
+with \fICI_RR_SVCB_PARAMS\fP or \fICI_RR_HTTPS_PARAMS\fP:
+.RS 4
+.B CI_SVCB_PARAM_MANDATORY
+- Mandatory keys in this RR (RFC 9460 Section 8). Datatype: \fICI_OPT_DATATYPE_U16_LIST\fP
+.br
+.B CI_SVCB_PARAM_ALPN
+- Additional supported protocols (RFC 9460 Section 7.1). Datatype: \fICI_OPT_DATATYPE_STR_LIST\fP
+.br
+.B CI_SVCB_PARAM_NO_DEFAULT_ALPN
+- No support for default protocol (RFC 9460 Section 7.1). Datatype: \fICI_OPT_DATATYPE_NONE\fP
+.br
+.B CI_SVCB_PARAM_PORT
+- Port for alternative endpoint (RFC 9460 Section 7.2). Datatype: \fICI_OPT_DATATYPE_U16\fP
+.br
+.B CI_SVCB_PARAM_IPV4HINT
+- IPv4 address hints (RFC 9460 Section 7.3). Datatype: \fICI_OPT_DATATYPE_INADDR4_LIST\fP
+.br
+.B CI_SVCB_PARAM_ECH
+- RESERVED (held for Encrypted ClientHello)
+.br
+.B CI_SVCB_PARAM_IPV6HINT
+- IPv6 address hints (RFC 9460 Section 7.3). Datatype: \fICI_OPT_DATATYPE_INADDR6_LIST\fP
+.br
+
+.RE
+
+.B ci_opt_param_t -
+OPT RR known parameters as returned by \fIci_dns_opt_get_datatype(3)\fP
+with \fICI_RR_OPT_OPTIONS\fB:
+.RS 4
+.B CI_OPT_PARAM_LLQ
+- RFC 8764. Apple's DNS Long-Lived Queries Protocol. Datatype: \fICI_OPT_DATATYPE_BIN\fP
+.br
+.B CI_OPT_PARAM_UL
+- http://files.dns-sd.org/draft-sekar-dns-ul.txt: Update Lease. Datatype: \fICI_OPT_DATATYPE_U32\fP
+.br
+.B CI_OPT_PARAM_NSID
+- RFC 5001. Name Server Identification. Datatype: \fICI_OPT_DATATYPE_BIN\fP
+.br
+.B CI_OPT_PARAM_DAU
+- RFC 6975. DNSSEC Algorithm Understood. Datatype: \fICI_OPT_DATATYPE_U8_LIST\fP
+.br
+.B CI_OPT_PARAM_DHU
+- RFC 6975. DS Hash Understood. Datatype: \fICI_OPT_DATATYPE_U8_LIST\fP
+.br
+.B CI_OPT_PARAM_N3U
+- RFC 6975. NSEC3 Hash Understood. Datatype: \fICI_OPT_DATATYPE_U8_LIST\fP
+.br
+.B CI_OPT_PARAM_EDNS_CLIENT_SUBNET
+- RFC 7871. Client Subnet. Datatype: \fICI_OPT_DATATYPE_BIN\fP
+.br
+.B CI_OPT_PARAM_EDNS_EXPIRE
+- RFC 7314. Expire Timer. Datatype: \fICI_OPT_DATATYPE_U32\fP
+.br
+.B CI_OPT_PARAM_COOKIE
+- RFC 7873. Client and Server Cookies. Datatype: \fICI_OPT_DATATYPE_BIN\fP
+.br
+.B CI_OPT_PARAM_EDNS_TCP_KEEPALIVE
+- RFC 7828. TCP Keepalive timeout. Datatype: \fICI_OPT_DATATYPE_U16\fP
+.br
+.B CI_OPT_PARAM_PADDING
+- RFC 7830. Padding. Datatype: \fICI_OPT_DATATYPE_BIN\fP
+.br
+.B CI_OPT_PARAM_CHAIN
+- RFC 7901. Chain query requests. Datatype: \fICI_OPT_DATATYPE_NAME\fP
+.br
+.B CI_OPT_PARAM_EDNS_KEY_TAG
+- RFC 8145. Signaling Trust Anchor Knowledge in DNSSEC. Datatype: \fICI_OPT_DATATYPE_U16_LIST\fP
+.br
+.B CI_OPT_PARAM_EXTENDED_DNS_ERROR
+- RFC 8914. Extended ERROR code and message. Datatype: \fICI_OPT_DATATYPE_BIN\fP
+.br
+.RE
+
+.SH DESCRIPTION
+The \fIci_dns_rec_type_tostr(3)\fP function outputs a human readable DNS record
+type from its numeric form passed in
+.IR type .
+
+The \fIci_dns_class_tostr(3)\fP function outputs a human readable DNS class
+from its numeric form passed in
+.IR qclass .
+
+The \fIci_dns_opcode_tostr(3)\fP function outputs a human readable DNS opcode
+from its numeric form in
+.IR opcode .
+
+The \fIci_dns_rr_key_tostr(3)\fP function outputs a human readable DNS Resource
+Record parameter name from its numeric form in
+.IR key .
+
+The \fIci_dns_section_tostr(3)\fP function outputs a human readable DNS
+message section from its numeric form in
+.IR section .
+
+The \fIci_dns_rcode_tostr(3)\fP function outputs a human readable DNS
+response code from its numeric form in
+.IR rcode .
+
+The \fIci_dns_class_fromstr(3)\fP function outputs the DNS class in numeric
+from from its string representation in
+.IR str .
+The result is stored into the variable pointed to by
+.IR qclass .
+
+The \fIci_dns_rec_type_fromstr(3)\fP function outputs the DNS record type in
+numeric from from its string representation in
+.IR str .
+The result is stored into the variable pointed to by
+.IR qtype .
+
+The \fIci_dns_rr_get_keys(3)\fP function retrieves a list of parameters that
+may be set or retrieved for the provided
+.IR type .
+The count of returned keys is stored into the variable pointed to by
+.IR cnt .
+
+The \fIci_dns_rr_key_datatype(3)\fP function retrieves the associated datatype
+for an RR parameter specified by
+.IR key .
+
+The \fIci_dns_rr_key_to_rec_type(3)\fP function dereferences the provided RR
+parameter specified by
+.IR key
+to the DNS Record Type it belongs.
+
+The \fIci_dns_opt_get_datatype(3)\fP function is used in association with
+\fIci_dns_rr_set_opt(3)\fP and \fIci_dns_rr_get_opt(3)\fP to retrieve the
+datatype of an option record contained within an RR as specified in
+.IR key
+if it is known.  The raw option record identifier is provided by
+.IR opt .
+
+The \fIci_dns_opt_get_name(3)\fP function is used in association with
+\fIci_dns_rr_set_opt(3)\fP and \fIci_dns_rr_get_opt(3)\fP to retrieve human
+readable parameter name of an option record contained within an RR as specified
+in
+.IR key
+if it is known.  The raw option record identifier is provided by
+.IR opt .
+
+.SH RETURN VALUES
+\fIci_dns_rec_type_tostr(3)\fP, \fIci_dns_class_tostr(3)\fP,
+\fIci_dns_opcode_tostr(3)\fP, \fIci_dns_rr_key_tostr(3)\fP,
+\fIci_dns_section_tostr(3)\fP, \fIci_dns_rcode_tostr(3)\fP, and
+\fIci_dns_opt_get_name(3)\fP all return a human printable ASCII string, or
+NULL on error.
+
+\fIci_dns_class_fromstr(3)\fP and \fIci_dns_rec_type_fromstr(3)\fP return
+.B CI_TRUE
+on successful conversion, otherwise
+.B CI_FALSE.
+
+\fIci_dns_rr_get_keys(3)\fP returns an array of keys or NULL on failure.
+
+\fIci_dns_rr_key_datatype(3)\fP, \fIci_dns_rr_key_to_rec_type(3)\fP, and
+\fIci_dns_opt_get_datatype(3)\fP return their respective integer values, or
+0 on failure.
+
+.SH AVAILABILITY
+These functions were first introduced in c-ci version 1.22.0.
+.SH SEE ALSO
+.BR ci_dns_record (3),
+.BR ci_dns_rr (3),
+.BR ci_init (3)

@@ -1,0 +1,25 @@
+.\"
+.\" Copyright (C) 2004-2009 by Daniel Stenberg
+.\" SPDX-License-Identifier: MIT
+.\"
+.TH CI_DUP 3 "26 May 2009"
+.SH NAME
+ci_dup \- Duplicate a resolver channel
+.SH SYNOPSIS
+.nf
+#include <ci.h>
+
+int ci_dup(ci_channel_t **\fIdest\fP, const ci_channel_t *\fIsource\fP)
+.fi
+.SH DESCRIPTION
+The \fBci_dup(3)\fP function duplicates an existing communications channel
+for name service lookups.  If it returns successfully, \fBci_dup(3)\fP will
+set the variable pointed to by \fIdest\fP to a handle used to identify the
+name service channel.  The caller should invoke \fIci_destroy(3)\fP on the
+handle when the channel is no longer needed.
+.SH SEE ALSO
+.BR ci_destroy (3),
+.BR ci_init (3),
+.BR ci_library_init (3)
+.SH AVAILABILITY
+\fIci_dup(3)\fP was added in c-ci 1.6.0

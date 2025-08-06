@@ -3,13 +3,13 @@
 
 
 /* ================================================================
- *       ares/config-dos.h - Hand crafted config file for DOS
+ *       ci/config-dos.h - Hand crafted config file for DOS
  *
- * Copyright (C) The c-ares project and its contributors
+ * Copyright (C) The c-ci project and its contributors
  * SPDX-License-Identifier: MIT
  * ================================================================ */
 
-#define PACKAGE "c-ares"
+#define PACKAGE "c-ci"
 
 #define HAVE_ERRNO_H             1
 #define HAVE_GETENV              1

@@ -1,4 +1,4 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 name: WATT32
 on:
@@ -19,7 +19,7 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x86
-      - name: Checkout c-ares
+      - name: Checkout c-ci
         uses: actions/checkout@v4
       - name: Checkout Watt-32
         uses: actions/checkout@v4
@@ -46,9 +46,9 @@ jobs:
           W32_NASM: ..\util\win32\nasm.exe
           W32_NASM_: ../util/win32/nasm.exe
           DJ_ERR: ..\util\win32\dj_err.exe
-      - name: Build c-ares
+      - name: Build c-ci
         run: |
-          Copy-Item "include\ares_build.h.dist" -Destination "include\ares_build.h"
+          Copy-Item "include\ci_build.h.dist" -Destination "include\ci_build.h"
           nmake USE_WATT32=1 CFG=dll-release /NOLOGO /f .\Makefile.msvc
           nmake USE_WATT32=1 CFG=lib-release /NOLOGO /f .\Makefile.msvc
 

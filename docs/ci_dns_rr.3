@@ -1,0 +1,744 @@
+.\" Copyright (C) 2023 The c-ci project and its contributors.
+.\" SPDX-License-Identifier: MIT
+.\"
+.TH CI_DNS_RR 3 "12 November 2023"
+.SH NAME
+ci_dns_record_rr_add, ci_dns_record_rr_cnt, ci_dns_record_rr_del,
+ci_dns_record_rr_get, ci_dns_record_rr_get_const, ci_dns_rr_get_addr,
+ci_dns_rr_get_addr6, ci_dns_rr_get_bin, ci_dns_rr_get_abin_cnt,
+ci_dns_rr_get_abin, ci_dns_rr_get_class,
+ci_dns_rr_get_name, ci_dns_rr_get_opt, ci_dns_rr_get_opt_byid,
+ci_dns_rr_get_opt_cnt, ci_dns_rr_get_str, ci_dns_rr_get_ttl,
+ci_dns_rr_get_type, ci_dns_rr_get_u16, ci_dns_rr_get_u32,
+ci_dns_rr_get_u8, ci_dns_rr_key_t, ci_dns_rr_set_addr,
+ci_dns_rr_set_addr6, ci_dns_rr_set_bin, ci_dns_rr_add_abin,
+ci_dns_rr_del_abin, ci_dns_rr_set_opt,
+ci_dns_rr_set_str, ci_dns_rr_set_u16, ci_dns_rr_set_u32,
+ci_dns_rr_set_u8, ci_dns_section_t, ci_tlsa_match_t,
+ci_tlsa_selector_t, ci_tlsa_usage_t \-
+DNS Resource Record creating, reading, and writing functions.
+.SH SYNOPSIS
+.nf
+#include <ci.h>
+
+size_t ci_dns_record_rr_cnt(const ci_dns_record_t *dnsrec,
+                              ci_dns_section_t       sect);
+
+ci_status_t ci_dns_record_rr_add(ci_dns_rr_t     **rr_out,
+                                     ci_dns_record_t  *dnsrec,
+                                     ci_dns_section_t  sect,
+                                     const char         *name,
+                                     ci_dns_rec_type_t type,
+                                     ci_dns_class_t    rclass,
+                                     unsigned int        ttl);
+
+ci_dns_rr_t *ci_dns_record_rr_get(ci_dns_record_t *dnsrec,
+                                      ci_dns_section_t sect,
+                                      size_t             idx);
+
+const ci_dns_rr_t *ci_dns_record_rr_get_const(const ci_dns_record_t *dnsrec,
+                                                  ci_dns_section_t sect,
+                                                  size_t idx);
+
+ci_status_t ci_dns_record_rr_del(ci_dns_record_t *dnsrec,
+                                     ci_dns_section_t sect,
+                                     size_t             idx);
+
+const char *ci_dns_rr_get_name(const ci_dns_rr_t *rr);
+
+ci_dns_rec_type_t ci_dns_rr_get_type(const ci_dns_rr_t *rr);
+
+ci_dns_class_t ci_dns_rr_get_class(const ci_dns_rr_t *rr);
+
+unsigned int ci_dns_rr_get_ttl(const ci_dns_rr_t *rr);
+
+ci_status_t ci_dns_rr_set_addr(ci_dns_rr_t        *dns_rr,
+                                   ci_dns_rr_key_t     key,
+                                   const struct in_addr *addr);
+
+ci_status_t ci_dns_rr_set_addr6(ci_dns_rr_t              *dns_rr,
+                                    ci_dns_rr_key_t           key,
+                                    const struct ci_in6_addr *addr);
+
+ci_status_t ci_dns_rr_set_str(ci_dns_rr_t    *dns_rr,
+                                  ci_dns_rr_key_t key,
+                                  const char       *val);
+
+ci_status_t ci_dns_rr_set_u8(ci_dns_rr_t    *dns_rr,
+                                 ci_dns_rr_key_t key,
+                                 unsigned char     val);
+
+ci_status_t ci_dns_rr_set_u16(ci_dns_rr_t    *dns_rr,
+                                  ci_dns_rr_key_t key,
+                                  unsigned short    val);
+
+ci_status_t ci_dns_rr_set_u32(ci_dns_rr_t    *dns_rr,
+                                  ci_dns_rr_key_t key,
+                                  unsigned int      val);
+
+ci_status_t ci_dns_rr_set_bin(ci_dns_rr_t       *dns_rr,
+                                  ci_dns_rr_key_t    key,
+                                  const unsigned char *val,
+                                  size_t               len);
+
+ci_status_t ci_dns_rr_add_abin(ci_dns_rr_t *dns_rr,
+                                   ci_dns_rr_key_t key,
+                                   const unsigned char *val,
+                                   size_t len);
+
+ci_status_t ci_dns_rr_del_abin(ci_dns_rr_t *dns_rr,
+                                   ci_dns_rr_key_t key,
+                                   size_t idx);
+
+ci_status_t ci_dns_rr_set_opt(ci_dns_rr_t       *dns_rr,
+                                  ci_dns_rr_key_t    key,
+                                  unsigned short       opt,
+                                  const unsigned char *val,
+                                  size_t               val_len);
+
+ci_status_t ci_dns_rr_del_opt_byid(ci_dns_rr_t       *dns_rr,
+                                       ci_dns_rr_key_t    key,
+                                       unsigned short       opt);
+
+const struct in_addr *ci_dns_rr_get_addr(const ci_dns_rr_t *dns_rr,
+                                           ci_dns_rr_key_t key);
+
+const struct ci_in6_addr *ci_dns_rr_get_addr6(const ci_dns_rr_t *dns_rr,
+                                                  ci_dns_rr_key_t key);
+
+const char *ci_dns_rr_get_str(const ci_dns_rr_t *dns_rr,
+                                ci_dns_rr_key_t    key);
+
+unsigned char ci_dns_rr_get_u8(const ci_dns_rr_t *dns_rr,
+                                 ci_dns_rr_key_t    key);
+
+unsigned short ci_dns_rr_get_u16(const ci_dns_rr_t *dns_rr,
+                                   ci_dns_rr_key_t    key);
+
+unsigned int ci_dns_rr_get_u32(const ci_dns_rr_t *dns_rr,
+                                 ci_dns_rr_key_t    key);
+
+const unsigned char *ci_dns_rr_get_bin(const ci_dns_rr_t *dns_rr,
+                                         ci_dns_rr_key_t key,
+                                         size_t *len);
+
+size_t ci_dns_rr_get_abin_cnt(const ci_dns_rr_t *dns_rr,
+                                ci_dns_rr_key_t key);
+
+const unsigned char *ci_dns_rr_get_abin(const ci_dns_rr_t *dns_rr,
+                                          ci_dns_rr_key_t key, size_t idx,
+                                          size_t *len);
+
+size_t ci_dns_rr_get_opt_cnt(const ci_dns_rr_t *dns_rr,
+                               ci_dns_rr_key_t    key);
+
+unsigned short ci_dns_rr_get_opt(const ci_dns_rr_t  *dns_rr,
+                                   ci_dns_rr_key_t     key,
+                                   size_t                idx,
+                                   const unsigned char **val,
+                                   size_t               *val_len);
+
+ci_bool_t ci_dns_rr_get_opt_byid(const ci_dns_rr_t  *dns_rr,
+                                     ci_dns_rr_key_t     key,
+                                     unsigned short        opt,
+                                     const unsigned char **val,
+                                     size_t *val_len);
+
+.fi
+.SH ENUMERATIONS
+
+.B ci_dns_section_t -
+DNS RR section types:
+.RS 4
+.B CI_SECTION_ANSWER
+- Answer section
+.br
+.B CI_SECTION_AUTHORITY
+- Authority section
+.br
+.B CI_SECTION_ADDITIONAL
+- Additional Information section
+.br
+.RE
+
+.B ci_dns_rr_key_t -
+Keys used for handling RR record parameters:
+.RS 4
+.B CI_RR_A_ADDR
+- A Record. Address. Datatype: \fICI_DATATYPE_INADDR\fP
+.br
+.B CI_RR_NS_NSDNAME
+- NS Record. Name. Datatype: \fICI_DATATYPE_NAME\fP
+.br
+.B CI_RR_CNAME_CNAME
+- CNAME Record. CName. Datatype: \fICI_DATATYPE_NAME\fP
+.br
+.B CI_RR_SOA_MNAME
+- SOA Record. MNAME, Primary Source of Data. Datatype: \fICI_DATATYPE_NAME\fP
+.br
+.B CI_RR_SOA_RNAME
+- SOA Record. RNAME, Mailbox of person responsible. Datatype: \fICI_DATATYPE_NAME\fP
+.br
+.B CI_RR_SOA_SERIAL
+- SOA Record. Serial, version. Datatype: \fICI_DATATYPE_U32\fP
+.br
+.B CI_RR_SOA_REFRESH
+- SOA Record. Refresh, zone refersh interval. Datatype: \fICI_DATATYPE_U32\fP
+.br
+.B CI_RR_SOA_RETRY
+- SOA Record. Retry, failed refresh retry interval. Datatype: \fICI_DATATYPE_U32\fP
+.br
+.B CI_RR_SOA_EXPIRE
+- SOA Record. Expire, upper limit on authority. Datatype: \fICI_DATATYPE_U32\fP
+.br
+.B CI_RR_SOA_MINIMUM
+- SOA Record. Minimum, RR TTL. Datatype: \fICI_DATATYPE_U32\fP
+.br
+.B CI_RR_PTR_DNAME
+-  PTR Record. DNAME, pointer domain. Datatype: \fICI_DATATYPE_NAME\fP
+.br
+.B CI_RR_HINFO_CPU
+- HINFO Record. CPU. Datatype: \fICI_DATATYPE_STR\fP
+.br
+.B CI_RR_HINFO_OS
+- HINFO Record. OS. Datatype: \fICI_DATATYPE_STR\fP
+.br
+.B CI_RR_MX_PREFERENCE
+- MX Record. Preference. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_MX_EXCHANGE
+- MX Record. Exchange, domain. Datatype: \fICI_DATATYPE_NAME\fP
+.br
+.B CI_RR_TXT_DATA
+- TXT Record. Data. Datatype: \fICI_DATATYPE_ABINP\fP
+.br
+.B CI_RR_SIG_TYPE_COVERED
+- SIG Record. Type Covered. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_SIG_ALGORITHM
+- SIG Record. Algorithm. Datatype: \fICI_DATATYPE_U8\fP
+.br
+.B CI_RR_SIG_LABELS
+- SIG Record. Labels. Datatype: \fICI_DATATYPE_U8\fP
+.br
+.B CI_RR_SIG_ORIGINAL_TTL
+- SIG Record. Original TTL. Datatype: \fICI_DATATYPE_U32\fP
+.br
+.B CI_RR_SIG_EXPIRATION
+- SIG Record. Signature Expiration. Datatype: \fICI_DATATYPE_U32\fP
+.br
+.B CI_RR_SIG_INCEPTION
+- SIG Record. Signature Inception. Datatype: \fICI_DATATYPE_U32\fP
+.br
+.B CI_RR_SIG_KEY_TAG
+- SIG Record. Key Tag. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_SIG_SIGNERS_NAME
+- SIG Record. Signer's Name. Datatype: \fICI_DATATYPE_NAME\fP
+.br
+.B CI_RR_SIG_SIGNATURE
+- SIG Record. Signature. Datatype: \fICI_DATATYPE_BIN\fP
+.br
+.B CI_RR_AAAA_ADDR
+- AAAA Record. Address. Datatype: \fICI_DATATYPE_INADDR6\fP
+.br
+.B CI_RR_SRV_PRIORITY
+- SRV Record. Priority. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_SRV_WEIGHT
+- SRV Record. Weight. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_SRV_PORT
+- SRV Record. Port. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_SRV_TARGET
+- SRV Record. Target domain. Datatype: \fICI_DATATYPE_NAME\fP
+.br
+.B CI_RR_NAPTR_ORDER
+- NAPTR Record. Order. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_NAPTR_PREFERENCE
+- NAPTR Record. Preference. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_NAPTR_FLAGS
+- NAPTR Record. Flags. Datatype: \fICI_DATATYPE_STR\fP
+.br
+.B CI_RR_NAPTR_SERVICES
+- NAPTR Record. Services. Datatype: \fICI_DATATYPE_STR\fP
+.br
+.B CI_RR_NAPTR_REGEXP
+- NAPTR Record. Regexp. Datatype: \fICI_DATATYPE_STR\fP
+.br
+.B CI_RR_NAPTR_REPLACEMENT
+- NAPTR Record. Replacement. Datatype: \fICI_DATATYPE_NAME\fP
+.br
+.B CI_RR_OPT_UDP_SIZE
+- OPT Record. UDP Size. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_OPT_VERSION
+- OPT Record. Version. Datatype: \fICI_DATATYPE_U8\fP
+.br
+.B CI_RR_OPT_FLAGS
+- OPT Record. Flags. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_OPT_OPTIONS
+- OPT Record. Options. See \fIci_opt_param_t\fP. Datatype: \fICI_DATATYPE_OPT\fP
+.br
+.B CI_RR_TLSA_CERT_USAGE
+- TLSA Record. Certificate Usage. See \fIci_tlsa_usage_t\fP. Datatype: \fICI_DATATYPE_U8\fP
+.br
+.B CI_RR_TLSA_SELECTOR
+- TLSA Record. Selector. See \fIci_tlsa_selector_t\fP. Datatype: \fICI_DATATYPE_U8\fP
+.br
+.B CI_RR_TLSA_MATCH
+- TLSA Record. Matching Type. See \fIci_tlsa_match_t\fP. Datatype: \fICI_DATATYPE_U8\fP
+.br
+.B CI_RR_TLSA_DATA
+- TLSA Record. Certificate Association Data. Datatype: \fICI_DATATYPE_BIN\fP
+.br
+.B CI_RR_SVCB_PRIORITY
+- SVCB Record. SvcPriority. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_SVCB_TARGET
+- SVCB Record. TargetName. Datatype: \fICI_DATATYPE_NAME\fP
+.br
+.B CI_RR_SVCB_PARAMS
+- SVCB Record. SvcParams. See \fIci_svcb_param_t\fP. Datatype: \fICI_DATATYPE_OPT\fP
+.br
+.B CI_RR_HTTPS_PRIORITY
+- HTTPS Record. SvcPriority. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_HTTPS_TARGET
+- HTTPS Record. TargetName. Datatype: \fICI_DATATYPE_NAME\fP
+.br
+.B CI_RR_HTTPS_PARAMS
+- HTTPS Record. SvcParams. See \fIci_svcb_param_t\fP. Datatype: \fICI_DATATYPE_OPT\fP
+.br
+.B CI_RR_URI_PRIORITY
+- URI Record. Priority. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_URI_WEIGHT
+- URI Record. Weight. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_URI_TARGET
+- URI Record. Target domain. Datatype: \fICI_DATATYPE_NAME\fP
+.br
+.B CI_RR_CAA_CRITICAL
+- CAA Record. Critical flag. Datatype: \fICI_DATATYPE_U8\fP
+.br
+.B CI_RR_CAA_TAG
+- CAA Record. Tag/Property. Datatype: \fICI_DATATYPE_STR\fP
+.br
+.B CI_RR_CAA_VALUE
+- CAA Record. Value. Datatype: \fICI_DATATYPE_BINP\fP
+.br
+.B CI_RR_RAW_RR_TYPE
+- RAW Record. RR Type. Datatype: \fICI_DATATYPE_U16\fP
+.br
+.B CI_RR_RAW_RR_DATA
+- RAW Record. RR Data. Datatype: \fICI_DATATYPE_BIN\fP
+.br
+.RE
+
+.B ci_tlsa_usage_t -
+TLSA Record \fICI_RR_TLSA_CERT_USAGE\fP known values
+.RS 4
+.B CI_TLSA_USAGE_CA
+- Certificate Usage 0. CA Constraint
+.br
+.B CI_TLSA_USAGE_SERVICE
+- Certificate Usage 1. Service Certificate Constraint
+.br
+.B CI_TLSA_USAGE_TRUSTANCHOR
+- Certificate Usage 2. Trust Anchor Assertion
+.br
+.B CI_TLSA_USAGE_DOMAIN
+- Certificate Usage 3. Domain-issued certificate
+.br
+.RE
+
+.B ci_tlsa_selector_t -
+TLSA Record \fICI_RR_TLSA_SELECTOR\fP known values:
+.RS 4
+.B CI_TLSA_SELECTOR_FULL
+- Full Certificate
+.br
+.B CI_TLSA_SELECTOR_SUBJPUBKEYINFO
+- DER-encoded SubjectPublicKeyInfo
+.br
+.RE
+
+.B ci_tlsa_match_t -
+TLSA Record \fICI_RR_TLSA_MATCH\fP known values:
+.RS 4
+.B CI_TLSA_MATCH_EXACT
+- Exact match
+.br
+.B CI_TLSA_MATCH_SHA256
+- Sha256 match
+.br
+.B CI_TLSA_MATCH_SHA512
+- Sha512 match
+.br
+.RE
+
+
+.SH DESCRIPTION
+
+The \fIci_dns_record_rr_cnt(3)\fP function returns the number of resource
+records in the DNS record provided by the
+.IR dnsrec
+parameter for the section provided in the
+.IR sect
+parameter.
+
+The \fIci_dns_record_rr_add(3)\fP function adds a new resource record entry
+the the DNS record provided by the
+.IR dnsrec
+parameter.  The resulting resource record is stored into the variable pointed to by
+.IR rr_out.
+The DNS section the resource record belongs to is specified by the
+.IR sect
+parameter.  The domain name associated with the resource record is specified by the
+.IR name
+parameter, which can not be NULL but may be an empty string, or ".".  The resource
+record type is specified in the
+.IR type
+parameter, along with the DNS record class in the
+.IR rclass
+parameter, and the Time To Live (TTL) in the
+.IR ttl
+parameter.
+
+
+The \fIci_dns_record_rr_get(3)\fP and \fIci_dns_record_rr_get_const(3)\fP
+functions are used to retrieve the resource record pointer from the DNS record
+provided in the
+.IR dnsrec
+parameter, for the resource record section provided in the
+.IR sect
+parameter, for the specified index in the
+.IR idx
+parameter.  The index must be less than \fIci_dns_record_rr_cnt(3)\fP.  The
+former returns a writable pointer to the resource record, while the latter
+returns a read-only pointer to the resource record.
+
+
+The \fIci_dns_record_rr_del(3)\fP is used to delete a resource record from
+the DNS record specified in the
+.IR dnsrec
+parameter.  Its primary use is to remove a \fICI_REC_TYPE_OPT\fP record when
+needing to retry a query without EDNS support.  The DNS RR section is specified
+via the
+.IR sect
+parameter, and the index to remove is specified in the
+.IR idx
+parameter.  The index must be less than \fIci_dns_record_rr_cnt(3)\fP.
+
+
+The \fIci_dns_rr_get_name(3)\fP function is used to retrieve the resource
+record domain name from the Resource Record pointer provided in the
+.IR rr
+parameter.
+
+The \fIci_dns_rr_get_type(3)\fP function is used to retrieve the resource
+record type from the Resource Record pointer provided in the
+.IR rr
+parameter.
+
+The \fIci_dns_rr_get_class(3)\fP function is used to retrieve the resource
+record class from the Resource Record pointer provided in the
+.IR rr
+parameter.
+
+The \fIci_dns_rr_get_ttl(3)\fP function is used to retrieve the resource
+record class Time to Live (TTL) from the Resource Record pointer provided in the
+.IR rr
+parameter.
+
+The \fIci_dns_rr_set_addr(3)\fP function is used to set an IPv4 address for the
+associated resource record key/parameter when the datatype is \fICI_DATATYPE_INADDR\fP.
+The resource record to be modified is provided in the
+.IR dns_rr
+parameter, the key/parameter is provided in the
+.IR key
+parameter, and the value is provided in the
+.IR addr
+parameter.
+
+The \fIci_dns_rr_set_addr6(3)\fP function is used to set an IPv6 address for the
+associated resource record key/parameter when the datatype is \fICI_DATATYPE_INADDR6\fP.
+The resource record to be modified is provided in the
+.IR dns_rr
+parameter, the key/parameter is provided in the
+.IR key
+parameter, and the value is provided in the
+.IR addr
+parameter.
+
+The \fIci_dns_rr_set_str(3)\fP function is used to set a string for the
+associated resource record key/parameter when the datatype is \fICI_DATATYPE_STR\fP
+or \fICI_DATATYPE_NAME\fP.  Most strings are limited to 255 bytes,
+however some records, such as a TXT record may allow longer as they are output
+as multiple strings. The resource record to be modified is
+provided in the
+.IR dns_rr
+parameter, the key/parameter is provided in the
+.IR key
+parameter, and the value is provided in the
+.IR val
+parameter.
+
+The \fIci_dns_rr_set_u8(3)\fP function is used to set an 8bit unsigned value for the
+associated resource record key/parameter when the datatype is \fICI_DATATYPE_U8\fP.
+The resource record to be modified is provided in the
+.IR dns_rr
+parameter, the key/parameter is provided in the
+.IR key
+parameter, and the value is provided in the
+.IR val
+parameter.
+
+The \fIci_dns_rr_set_u16(3)\fP function is used to set an 16bit unsigned value for the
+associated resource record key/parameter when the datatype is \fICI_DATATYPE_U16\fP.
+The resource record to be modified is provided in the
+.IR dns_rr
+parameter, the key/parameter is provided in the
+.IR key
+parameter, and the value is provided in the
+.IR val
+parameter.
+
+The \fIci_dns_rr_set_u32(3)\fP function is used to set an 32bit unsigned value for the
+associated resource record key/parameter when the datatype is \fICI_DATATYPE_U32\fP.
+The resource record to be modified is provided in the
+.IR dns_rr
+parameter, the key/parameter is provided in the
+.IR key
+parameter, and the value is provided in the
+.IR val
+parameter.
+
+The \fIci_dns_rr_set_bin(3)\fP function is used to set a binary value for the
+associated resource record key/parameter when the datatype is \fICI_DATATYPE_BIN\fP
+or \fICI_DATATYPE_BINP\fP.
+The resource record to be modified is provided in the
+.IR dns_rr
+parameter, the key/parameter is provided in the
+.IR key
+parameter, and the value is provided in the
+.IR val
+parameter. And the associated value length is provided in the
+.IR len
+parameter.
+
+The \fIci_dns_rr_add_abin(3)\fP function is used to append a binary value in
+the array for the associated resource record key/parameter when the datatype
+is \fICI_DATATYPE_ABINP\fP.
+The resource record to be modified is provided in the
+.IR dns_rr
+parameter, the key/parameter is provided in the
+.IR key
+parameter, and the value is provided in the
+.IR val
+parameter. And the associated value length is provided in the
+.IR len
+parameter.
+
+The \fIci_dns_rr_del_abin(3)\fP function is used to delete a binary value in
+the array for the associated resource record key/parameter when the datatype
+is \fICI_DATATYPE_ABINP\fP.
+The resource record to be modified is provided in the
+.IR dns_rr
+parameter, the key/parameter is provided in the
+.IR key
+parameter, and the index to remove is provided in the
+.IR idx
+parameter.
+
+The \fIci_dns_rr_set_opt(3)\fP function is used to set option/parameter keys and
+values for the resource record when the datatype is \fICI_DATATYPE_OPT\fP.  The
+resource record to be modified is provided in the
+.IR dns_rr
+parameter.  They key/parameter is provided in the
+.IR key
+parameter.  The option/parameter value specific to the resource record is provided
+in the
+.IR opt
+parameter, and this is left to the user to determine the appropriate value to
+use.  Some known values may be provided by \fIci_svcb_param_t\fP and \fIci_opt_param_t\fP
+enumerations.  The value for the option is always provided in binary form in
+.IR val
+with length provided in
+.IR val_len.
+
+The \fIci_dns_rr_del_opt_byid(3)\fP function is used to delete option/parameter
+keys and values for the resource record when the datatype is
+\fICI_DATATYPE_OPT\fP.  The resource record to be modified is provided in the
+.IR dns_rr
+parameter.  They key/parameter is provided in the
+.IR key
+parameter.  The option/parameter value specific to the resource record is provided
+in the
+.IR opt
+parameter.  This function returns \fICI_SUCCESS\fP if the record is successfully
+removed, or \fICI_ENOTFOUND\fP if the record could not be found.
+
+The \fIci_dns_rr_get_addr(3)\fP function is used to retrieve the IPv4 address
+from the resource record when the datatype is \fICI_DATATYPE_INADDR\fP.  The
+resource record is provided in the
+.IR dns_rr
+parameter and the key/parameter to retrieve is provided in the
+.IR key
+parameter.
+
+The \fIci_dns_rr_get_addr6(3)\fP function is used to retrieve the IPv6 address
+from the resource record when the datatype is \fICI_DATATYPE_INADDR6\fP.  The
+resource record is provided in the
+.IR dns_rr
+parameter and the key/parameter to retrieve is provided in the
+.IR key
+parameter.
+
+The \fIci_dns_rr_get_str(3)\fP function is used to retrieve a string
+from the resource record when the datatype is \fICI_DATATYPE_STR\fP or
+\fICI_DATATYPE_NAME\fP.  The resource record is provided in the
+.IR dns_rr
+parameter and the key/parameter to retrieve is provided in the
+.IR key
+parameter.
+
+The \fIci_dns_rr_get_u8(3)\fP function is used to retrieve an 8bit integer
+from the resource record when the datatype is \fICI_DATATYPE_U8\fP.
+The resource record is provided in the
+.IR dns_rr
+parameter and the key/parameter to retrieve is provided in the
+.IR key
+parameter.
+
+The \fIci_dns_rr_get_u16(3)\fP function is used to retrieve a 16bit integer
+from the resource record when the datatype is \fICI_DATATYPE_U16\fP.
+The resource record is provided in the
+.IR dns_rr
+parameter and the key/parameter to retrieve is provided in the
+.IR key
+parameter.
+
+The \fIci_dns_rr_get_u32(3)\fP function is used to retrieve a 32bit integer
+from the resource record when the datatype is \fICI_DATATYPE_U32\fP.
+The resource record is provided in the
+.IR dns_rr
+parameter and the key/parameter to retrieve is provided in the
+.IR key
+parameter.
+
+The \fIci_dns_rr_get_bin(3)\fP function is used to retrieve binary data
+from the resource record when the datatype is \fICI_DATATYPE_BIN\fP or
+\fICI_DATATYPE_BINP\fP.
+The resource record is provided in the
+.IR dns_rr
+parameter and the key/parameter to retrieve is provided in the
+.IR key
+parameter, and length is stored into the variable pointed to by
+.IR len.
+
+The \fIci_dns_rr_get_abin_cnt(3)\fP function is used to retrieve the count
+of the array of stored binary values from the resource record when the datatype
+is \fICI_DATATYPE_ABINP\fP.
+The resource record is provided in the
+.IR dns_rr
+parameter and the key/parameter to retrieve is provided in the
+.IR key
+parameter.
+
+The \fIci_dns_rr_get_abin(3)\fP function is used to retrieve binary data from
+the resource record array when the datatype is \fICI_DATATYPE_ABINP\fP.
+The resource record is provided in the
+.IR dns_rr
+parameter and the key/parameter to retrieve is provided in the
+.IR key
+parameter, and the index to retrieve from the array is provided by the
+.IR idx
+parameter, and length is stored into the variable pointed to by
+.IR len.
+
+The \fIci_dns_rr_get_opt_cnt(3)\fP function is used to retrieve the count
+of options/parameters associated with the resource record when the datatype
+is \fICI_DATATYPE_OPT\fP.
+The resource record is provided in the
+.IR dns_rr
+parameter and the key/parameter to retrieve is provided in the
+.IR key.
+
+The \fIci_dns_rr_get_opt(3)\fP function is used to retrieve binary option data
+from the resource record when the datatype is \fICI_DATATYPE_OPT\fP for the
+specified index.
+The resource record is provided in the
+.IR dns_rr
+parameter and the key/parameter to retrieve is provided in the
+.IR key
+parameter, the index to retrieve the option data from is provided in the
+.IR idx
+parameter.  The value is stored into the variable pointed to by
+.IR val
+and length is stored into the variable pointed to by
+.IR val_len.
+
+The \fIci_dns_rr_get_opt_byid(3)\fP function is used to retrieve binary option data
+from the resource record when the datatype is \fICI_DATATYPE_OPT\fP for the
+specified option identifier, if it exists.
+The resource record is provided in the
+.IR dns_rr
+parameter and the key/parameter to retrieve is provided in the
+.IR key
+parameter, the identifier to retrieve the option data from is provided in the
+.IR opt
+parameter.  The value is stored into the variable pointed to by
+.IR val
+and length is stored into the variable pointed to by
+.IR val_len.
+
+
+.SH RETURN VALUES
+
+\fIci_dns_record_rr_cnt(3)\fP and \fIci_dns_rr_get_opt_cnt(3)\fP return the
+respective counts.
+
+\fIci_dns_record_rr_add(3)\fP, \fIci_dns_record_rr_del(3)\fP,
+\fIci_dns_rr_set_addr(3)\fP, \fIci_dns_rr_set_addr6(3)\fP,
+\fIci_dns_rr_set_str(3)\fP, \fIci_dns_rr_set_u8(3)\fP,
+\fIci_dns_rr_set_u16(3)\fP, \fIci_dns_rr_set_u32(3)\fP,
+\fIci_dns_rr_set_bin(3)\fP, \fIci_dns_rr_add_abin(3)\fP,
+\fIci_dns_rr_del_abin(3)\fP,
+and \fIci_dns_rr_set_opt(3)\fP all return an \fIci_status_t\fP error code.
+.B CI_SUCCESS
+is returned on success,
+.B CI_ENOMEM
+is returned on out of memory,
+.B CI_EFORMERR
+is returned on misuse.
+
+
+\fIci_dns_rr_get_name(3)\fP, \fIci_dns_rr_get_type(3)\fP,
+\fIci_dns_rr_get_class(3)\fP, \fIci_dns_rr_get_ttl(3)\fP,
+\fIci_dns_rr_get_addr(3)\fP, \fIci_dns_rr_get_addr6(3)\fP,
+\fIci_dns_rr_get_str(3)\fP, \fIci_dns_rr_get_u8(3)\fP,
+\fIci_dns_rr_get_u16(3)\fP, \fIci_dns_rr_get_u32(3)\fP,
+\fIci_dns_rr_get_bin(3)\fP, \fIci_dns_rr_get_abin_cnt(3)\fP,
+\fIci_dns_rr_get_abin(3)\fP, \fIci_dns_rr_get_opt(3)\fP all return their
+prescribed datatype values and in general can't fail except for misuse cases,
+in which a 0 (or NULL) may be returned, however 0 can also be a valid return
+value for most of these functions.
+
+\fIci_dns_record_rr_get(3)\fP and \fIci_dns_record_rr_get_const(3)\fP will
+return the requested resource record pointer or NULL on failure (misuse).
+
+\fIci_dns_rr_get_opt_byid(3)\fP will return CI_TRUE if the option was
+found, otherwise CI_FALSE if not found (or misuse).
+
+.SH AVAILABILITY
+These functions were first introduced in c-ci version 1.22.0.
+.SH SEE ALSO
+.BR ci_dns_mapping (3),
+.BR ci_dns_record (3),
+.BR ci_free_string (3)

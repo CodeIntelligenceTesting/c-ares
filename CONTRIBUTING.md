@@ -1,7 +1,7 @@
-Contributing to c-ares
+Contributing to c-ci
 ======================
 
-To contribute patches to c-ares, please generate a GitHub pull request
+To contribute patches to c-ci, please generate a GitHub pull request
 and follow these guidelines:
 
  - Check that the CI/CD builds are green for your pull request.

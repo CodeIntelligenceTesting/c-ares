@@ -1,0 +1,19 @@
+.\"
+.\" Copyright 2000 by the Massachusetts Institute of Technology.
+.\" SPDX-License-Identifier: MIT
+.\"
+.TH CI_FREE_STRING 3 "4 February 2004"
+.SH NAME
+ci_free_string \- Free strings allocated by ci functions
+.SH SYNOPSIS
+.nf
+#include <ci.h>
+
+void ci_free_string(void *\fIstr\fP)
+.fi
+.SH DESCRIPTION
+The \fIci_free_string(3)\fP function frees a string allocated by an ci
+function.
+.SH SEE ALSO
+.BR ci_mkquery (3)
+.BR ci_expand_string (3)

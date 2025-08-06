@@ -1,8 +1,8 @@
 #############################################################
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 #
-# Makefile for building arestest.exe with MingW32 (GCC-3.2)
+# Makefile for building citest.exe with MingW32 (GCC-3.2)
 # Use: make -f Makefile.m32 GTEST_ROOT=....
 #
 ########################################################
@@ -14,12 +14,12 @@ ifeq "$(GTEST_ROOT)" ""
   $(error missing GTEST_ROOT)
 endif
 
-# Where to find the c-ares source code; needed because the tests use library-internal headers
-ARES_SRC_DIR = ..
-# Where to find the built c-ares static library
-ARES_BLD_DIR = ..
-ARESLIB = $(ARES_BLD_DIR)/src/lib/libcares.a
-CPPFLAGS = -I$(ARES_SRC_DIR)/include -I$(ARES_SRC_DIR)/src/lib -I$(ARES_SRC_DIR)/src/lib/include -I$(GTEST_ROOT)/include -DCARES_STATICLIB -DCARES_NO_DEPRECATED
+# Where to find the c-ci source code; needed because the tests use library-internal headers
+CI_SRC_DIR = ..
+# Where to find the built c-ci static library
+CI_BLD_DIR = ..
+CILIB = $(CI_BLD_DIR)/src/lib/libcci.a
+CPPFLAGS = -I$(CI_SRC_DIR)/include -I$(CI_SRC_DIR)/src/lib -I$(CI_SRC_DIR)/src/lib/include -I$(GTEST_ROOT)/include -DCI_STATICLIB -DCI_NO_DEPRECATED
 CXXFLAGS = -Wall $(PTHREAD_CFLAGS) -std=gnu++14
 LDFLAGS =
 LDLIBS = -lws2_32 -liphlpapi
@@ -32,19 +32,19 @@ FUZZOBJS := $(patsubst %.c,%.o,$(strip $(FUZZSOURCES)))
 FUZZNAMEOBJS := $(patsubst %.c,%.o,$(strip $(FUZZNAMESOURCES)))
 DNSDUMPOBJS := $(patsubst %.cc,%.o,$(strip $(DUMPSOURCES)))
 
-all: arestest.exe aresfuzz.exe aresfuzzname.exe dnsdump.exe
+all: citest.exe cifuzz.exe cifuzzname.exe dnsdump.exe
 
-arestest.exe: $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $^  -L$(ARES_BLD_DIR)/src/lib -lcares $(LDLIBS) -L$(GTEST_ROOT)/lib -lgmock -lgtest
+citest.exe: $(OBJS)
+	$(LD) $(LDFLAGS) -o $@ $^  -L$(CI_BLD_DIR)/src/lib -lcci $(LDLIBS) -L$(GTEST_ROOT)/lib -lgmock -lgtest
 
-aresfuzz.exe: $(FUZZOBJS)
-	$(LD) $(LDFLAGS) -o $@ $^  -L$(ARES_BLD_DIR)/src/lib -lcares $(LDLIBS)
+cifuzz.exe: $(FUZZOBJS)
+	$(LD) $(LDFLAGS) -o $@ $^  -L$(CI_BLD_DIR)/src/lib -lcci $(LDLIBS)
 
-aresfuzzname.exe: $(FUZZNAMEOBJS)
-	$(LD) $(LDFLAGS) -o $@ $^  -L$(ARES_BLD_DIR)/src/lib -lcares $(LDLIBS)
+cifuzzname.exe: $(FUZZNAMEOBJS)
+	$(LD) $(LDFLAGS) -o $@ $^  -L$(CI_BLD_DIR)/src/lib -lcci $(LDLIBS)
 
 dnsdump.exe: $(DNSDUMPOBJS)
-	$(LD) $(LDFLAGS) -o $@ $^  -L$(ARES_BLD_DIR)/src/lib -lcares $(LDLIBS)
+	$(LD) $(LDFLAGS) -o $@ $^  -L$(CI_BLD_DIR)/src/lib -lcci $(LDLIBS)
 
 $(OBJS): $(TESTHEADERS)
 
@@ -53,12 +53,12 @@ $(OBJS): $(TESTHEADERS)
 .c.o:
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<
 
-test: arestest.exe
-	./arestest.exe --gtest_filter=-*LiveSearchTXT*:*LiveSearchANY*:*LiveGetLocalhostByAddr*
-vtest: arestest.exe
-	./arestest.exe -v --gtest_filter=-*LiveSearchTXT*:*LiveSearchANY*:*LiveGetLocalhostByAddr*
+test: citest.exe
+	./citest.exe --gtest_filter=-*LiveSearchTXT*:*LiveSearchANY*:*LiveGetLocalhostByAddr*
+vtest: citest.exe
+	./citest.exe -v --gtest_filter=-*LiveSearchTXT*:*LiveSearchANY*:*LiveGetLocalhostByAddr*
 
 clean:
-	$(RM) $(OBJS) arestest.exe aresfuzz.exe aresfuzzname.exe dnsdump.exe
+	$(RM) $(OBJS) citest.exe cifuzz.exe cifuzzname.exe dnsdump.exe
 
 

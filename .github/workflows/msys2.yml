@@ -1,4 +1,4 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 name: MSYS2 (Windows)
 on:
@@ -11,7 +11,7 @@ concurrency:
 
 env:
   TEST_FILTER: "-4 --gtest_filter=-*LiveSearchTXT*:*LiveSearchANY*:*LiveSearchNS*:*LiveGetLocalhostByAddr*"
-  CMAKE_FLAGS: "-DCMAKE_BUILD_TYPE=DEBUG -DCARES_STATIC=ON -DCMAKE_INSTALL_PREFIX=C:/projects/build-cares/test_install -DCARES_STATIC_PIC=ON -G Ninja"
+  CMAKE_FLAGS: "-DCMAKE_BUILD_TYPE=DEBUG -DCI_STATIC=ON -DCMAKE_INSTALL_PREFIX=C:/projects/build-cci/test_install -DCI_STATIC_PIC=ON -G Ninja"
   CONFIG_OPTS: "--disable-shared"
   MAKE: make
   DIST: Windows
@@ -51,29 +51,29 @@ jobs:
             mingw-w64-${{ matrix.env }}-lldb
             mingw-w64-${{ matrix.env }}-gdb
             ${{ matrix.extra_packages }}
-      - name: Checkout c-ares
+      - name: Checkout c-ci
         uses: actions/checkout@v4
-      - name: "CMake: build and test c-ares"
+      - name: "CMake: build and test c-ci"
         env:
           BUILD_TYPE: CMAKE
-          CMAKE_TEST_FLAGS: "-DCARES_BUILD_TESTS=ON"
+          CMAKE_TEST_FLAGS: "-DCI_BUILD_TESTS=ON"
           TEST_DEBUGGER: ${{ ( matrix.msystem == 'CLANG32' || matrix.msystem == 'CLANG64' ) && 'lldb' || 'gdb' }}
         run: |
           ./ci/build.sh
           ./ci/test.sh
-      - name: "Autotools: build and test c-ares"
+      - name: "Autotools: build and test c-ci"
         env:
           BUILD_TYPE: autotools
           TEST_DEBUGGER: ${{ ( matrix.msystem == 'CLANG32' || matrix.msystem == 'CLANG64' ) && 'lldb' || 'gdb' }}
         run: |
           ./ci/build.sh
           ./ci/test.sh
-      - name: "CMake: UBSAN: build and test c-ares"
+      - name: "CMake: UBSAN: build and test c-ci"
         # Bogus alignment errors on i686, so lets not run UBSAN on i686.
         if: ${{ matrix.msystem == 'CLANG64' }}
         env:
           BUILD_TYPE: "ubsan"
-          CMAKE_TEST_FLAGS: "-DCARES_BUILD_TESTS=ON"
+          CMAKE_TEST_FLAGS: "-DCI_BUILD_TESTS=ON"
           CFLAGS: "-fsanitize=undefined -fno-sanitize-recover"
           CXXFLAGS: "-fsanitize=undefined -fno-sanitize-recover"
           LDFLAGS: "-fsanitize=undefined"
@@ -81,12 +81,12 @@ jobs:
         run: |
           ./ci/build.sh
           ./ci/test.sh
-      - name: "CMake: ASAN: build and test c-ares"
+      - name: "CMake: ASAN: build and test c-ci"
         # Bogus alignment errors on i686, so lets not run UBSAN on i686.
         if: ${{ matrix.msystem == 'CLANG64' || matrix.msystem == 'CLANG32' }}
         env:
           BUILD_TYPE: "asan"
-          CMAKE_TEST_FLAGS: "-DCARES_BUILD_TESTS=ON"
+          CMAKE_TEST_FLAGS: "-DCI_BUILD_TESTS=ON"
           CFLAGS: "-fsanitize=address"
           CXXFLAGS: "-fsanitize=address"
           LDFLAGS: "-fsanitize=address"
@@ -94,7 +94,7 @@ jobs:
         run: |
           ./ci/build.sh
           ./ci/test.sh
-      - name: "Autotools: Static Analyzer: build c-ares"
+      - name: "Autotools: Static Analyzer: build c-ci"
         if: ${{ matrix.msystem == 'CLANG64' || matrix.msystem == 'CLANG32' }}
         # Cmake won't work because it somehow mangles linker args and it can't find core windows libraries
         # Must build static only with autotools otherwise libtool creates a wrapper with reportable issues

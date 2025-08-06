@@ -23,11 +23,11 @@
  *
  * SPDX-License-Identifier: MIT
  */
-#ifndef HEADER_CARES_CONFIG_WIN32_H
-#define HEADER_CARES_CONFIG_WIN32_H
+#ifndef HEADER_CI_CONFIG_WIN32_H
+#define HEADER_CI_CONFIG_WIN32_H
 
 /* ================================================================ */
-/*   c-ares/config-win32.h - Hand crafted config file for Windows   */
+/*   c-ci/config-win32.h - Hand crafted config file for Windows   */
 /* ================================================================ */
 
 /* ---------------------------------------------------------------- */
@@ -238,7 +238,7 @@
 #endif
 
 /* Threading support enabled */
-#define CARES_THREADS 1
+#define CI_THREADS 1
 
 /* ---------------------------------------------------------------- */
 /*                       TYPEDEF REPLACEMENTS                       */
@@ -389,4 +389,4 @@
 #  define ENOSPC ERROR_INVALID_PARAMETER
 #endif
 
-#endif /* HEADER_CARES_CONFIG_WIN32_H */
+#endif /* HEADER_CI_CONFIG_WIN32_H */

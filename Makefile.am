@@ -27,7 +27,7 @@ MSVCFILES = buildconf.bat
 # adig and ahost are just sample programs and thus not mentioned with the
 # regular sources and headers
 EXTRA_DIST = AUTHORS $(man_MANS) RELEASE-NOTES.md	\
- c-ares-config.cmake.in libcares.pc.cmake libcares.pc.in buildconf \
+ c-ci-config.cmake.in libcci.pc.cmake libcci.pc.in buildconf \
  README.msvc $(MSVCFILES) INSTALL.md README.md LICENSE.md \
  CMakeLists.txt Makefile.dj Makefile.m32 Makefile.netware Makefile.msvc \
  Makefile.Watcom CONTRIBUTING.md SECURITY.md DEVELOPER-NOTES.md \
@@ -35,17 +35,17 @@ EXTRA_DIST = AUTHORS $(man_MANS) RELEASE-NOTES.md	\
 
 CLEANFILES = $(PDFPAGES) $(HTMLPAGES)
 
-DISTCLEANFILES = include/ares_build.h
+DISTCLEANFILES = include/ci_build.h
 
 DIST_SUBDIRS = include src test docs
 
 SUBDIRS = @BUILD_SUBDIRS@
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libcares.pc
+pkgconfig_DATA = libcci.pc
 
-# where to install the c-ares headers
-libcares_ladir = $(includedir)
+# where to install the c-ci headers
+libcci_ladir = $(includedir)
 
 
 # Make files named *.dist replace the file without .dist extension

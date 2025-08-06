@@ -1,0 +1,27 @@
+# Copyright (C) The c-ci project and its contributors
+# SPDX-License-Identifier: MIT
+
+@PACKAGE_INIT@
+
+set_and_check(c-ci_INCLUDE_DIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
+
+include("${CMAKE_CURRENT_LIST_DIR}/c-ci-config-version.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/c-ci-targets.cmake")
+
+set(c-ci_LIBRARY c-ci::cci)
+
+if(@CI_SHARED@)
+	if(NOT TARGET c-ci::cci_shared)
+		add_library(c-ci::cci_shared INTERFACE IMPORTED)
+		set_target_properties(c-ci::cci_shared PROPERTIES INTERFACE_LINK_LIBRARIES "c-ci::cci")
+	endif()
+	set(c-ci_SHARED_LIBRARY c-ci::cci_shared)
+endif()
+
+if(@CI_STATIC@)
+	if(NOT TARGET c-ci::cci_static)
+		add_library(c-ci::cci_static INTERFACE IMPORTED)
+		set_target_properties(c-ci::cci_static PROPERTIES INTERFACE_LINK_LIBRARIES "c-ci::cci")
+	endif()
+	set(c-ci_STATIC_LIBRARY c-ci::cci_static)
+endif()

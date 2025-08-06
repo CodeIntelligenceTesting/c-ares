@@ -1,0 +1,75 @@
+.\"
+.\" Copyright 1998, 2000 by the Massachusetts Institute of Technology.
+.\" SPDX-License-Identifier: MIT
+.\"
+.TH CI_MKQUERY 3 "20 Nov 2009"
+.SH NAME
+ci_mkquery \- Compose a single-question DNS query buffer
+.SH SYNOPSIS
+.nf
+#include <ci.h>
+
+int ci_mkquery(const char *\fIname\fP, int \fIdnsclass\fP, int \fItype\fP,
+                 unsigned short \fIid\fP, int \fIrd\fP, unsigned char **\fIbuf\fP,
+                 int *\fIbuflen\fP)
+.fi
+.SH DESCRIPTION
+Deprecated function. See \fIci_create_query(3)\fP instead!
+
+The
+.B ci_mkquery
+function composes a DNS query with a single question.
+The parameter
+.I name
+gives the query name as a NUL-terminated C string of period-separated
+labels optionally ending with a period; periods and backslashes within
+a label must be escaped with a backlash.  The parameters
+.I dnsclass
+and
+.I type
+give the class and type of the query using the values defined in
+.BR <arpa/nameser.h> .
+The parameter
+.I id
+gives a 16-bit identifier for the query.  The parameter
+.I rd
+should be nonzero if recursion is desired, zero if not.  The query
+will be placed in an allocated buffer, a pointer to which will be
+stored in the variable pointed to by
+.IR buf ,
+and the length of which will be stored in the variable pointed to by
+.IR buflen .
+It is the caller's responsibility to free this buffer using
+\fIci_free_string(3)\fP when it is no longer needed.
+
+Usage of \fIci_mkquery(3)\fP is deprecated, whereas the function is
+equivalent to \fIci_create_query(3)\fP with \fBmax_udp_size\fP set to
+0.
+
+.SH RETURN VALUES
+.B ci_mkquery
+can return any of the following values:
+.TP 15
+.B CI_SUCCESS
+Construction of the DNS query succeeded.
+.TP 15
+.B CI_ENOTFOUND
+The query name
+.I name
+refers to a
+.I .onion
+domain name. See RFC 7686.
+.TP 15
+.B CI_EBADNAME
+The query name
+.I name
+could not be encoded as a domain name, either because it contained a
+zero-length label or because it contained a label of more than 63
+characters.
+.TP 15
+.B CI_ENOMEM
+Memory was exhausted.
+.SH SEE ALSO
+.BR ci_expand_name (3),
+.BR ci_dns_record (3),
+.BR ci_free_string (3)

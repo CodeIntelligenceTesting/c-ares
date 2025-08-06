@@ -1,4 +1,4 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 name: Build Release Package
 on:
@@ -28,7 +28,7 @@ jobs:
         with:
           packages: autoconf automake libtool g++ libgmock-dev pkg-config gdb
           version: 1.0
-      - name: Checkout c-ares
+      - name: Checkout c-ci
         uses: actions/checkout@v4
       - name: Get Tag version
         id: version
@@ -38,7 +38,7 @@ jobs:
             version="prerelease"
           fi
           echo "version=${version}" >> "$GITHUB_OUTPUT"
-      - name: "build c-ares tarball"
+      - name: "build c-ci tarball"
         run: |
           autoreconf -fi
           ./configure
@@ -46,8 +46,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "c-ares-src-tarball"
-          path: 'c-ares-*.tar.gz'
+          name: "c-ci-src-tarball"
+          path: 'c-ci-*.tar.gz'
           if-no-files-found: error
           overwrite: true
           retention-days: 7
@@ -59,14 +59,14 @@ jobs:
           draft: true
           make_latest: true
           name: ${{ steps.version.outputs.version }}
-          files: c-ares-${{ steps.version.outputs.version }}.tar.gz
+          files: c-ci-${{ steps.version.outputs.version }}.tar.gz
           fail_on_unmatched_files: true
           discussion_category_name: "Announcements"
       - name: Generate subject
         id: hash
         run: |
           set -euo pipefail
-          echo "hashes=$(sha256sum c-ares-*.tar.gz | base64 -w0)" >> "$GITHUB_OUTPUT"
+          echo "hashes=$(sha256sum c-ci-*.tar.gz | base64 -w0)" >> "$GITHUB_OUTPUT"
 
   provenance:
     needs: [build]
@@ -78,4 +78,4 @@ jobs:
     with:
       base64-subjects: "${{ needs.build.outputs.hashes }}"
       upload-assets: ${{ startsWith(github.ref, 'refs/tags/') }}
-      provenance-name: "c-ares-${{ needs.build.outputs.version }}.intoto.jsonl"
+      provenance-name: "c-ci-${{ needs.build.outputs.version }}.intoto.jsonl"

@@ -1,4 +1,4 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 name: iOS
 on:
@@ -12,8 +12,8 @@ concurrency:
 env:
   DIST: "iOS"
   MAKE: "make"
-  CMAKE_FLAGS: "-DCMAKE_BUILD_TYPE=DEBUG -DCARES_STATIC=ON -DCARES_STATIC_PIC=ON -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_DEPLOYMENT_TARGET=10.0 -DCMAKE_OSX_ARCHITECTURES=armv7;armv7s;arm64 -G Ninja"
-  CMAKE_TEST_FLAGS: "-DCARES_BUILD_TESTS=OFF"
+  CMAKE_FLAGS: "-DCMAKE_BUILD_TYPE=DEBUG -DCI_STATIC=ON -DCI_STATIC_PIC=ON -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_DEPLOYMENT_TARGET=10.0 -DCMAKE_OSX_ARCHITECTURES=armv7;armv7s;arm64 -G Ninja"
+  CMAKE_TEST_FLAGS: "-DCI_BUILD_TESTS=OFF"
 
 jobs:
   build:
@@ -22,21 +22,21 @@ jobs:
     steps:
       - name: Install packages
         run: brew install cmake googletest llvm autoconf automake libtool make ninja
-      - name: Checkout c-ares
+      - name: Checkout c-ci
         uses: actions/checkout@v4
-      - name: "CMake: build and test c-ares"
+      - name: "CMake: build and test c-ci"
         env:
           BUILD_TYPE: CMAKE
         run: |
           ./ci/build.sh
-      - name: "Autotools: build and test c-ares"
+      - name: "Autotools: build and test c-ci"
         env:
           BUILD_TYPE: autotools
           CFLAGS: "-arch armv7 -arch armv7s -arch arm64 -miphoneos-version-min=10.0"
           CONFIG_OPTS: "--host=arm-apple-darwin10 --disable-tests"
         run: |
           ./ci/build.sh
-      - name: "Cmake: Static Analyzer: build c-ares"
+      - name: "Cmake: Static Analyzer: build c-ci"
         env:
           BUILD_TYPE: "analyze"
           CC: "clang"

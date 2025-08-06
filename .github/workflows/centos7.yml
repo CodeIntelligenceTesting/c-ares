@@ -1,4 +1,4 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 name: CentOS 7
 on:
@@ -11,8 +11,8 @@ concurrency:
 
 env:
   TEST_FILTER: "--gtest_filter=-*LiveSearchTXT*:*LiveSearchANY*"
-  CMAKE_FLAGS: "-DCMAKE_BUILD_TYPE=DEBUG -DCARES_STATIC=ON -DCARES_STATIC_PIC=ON -G Ninja"
-  CMAKE_TEST_FLAGS: "-DCARES_BUILD_TESTS=ON -DCMAKE_PREFIX_PATH=/usr/local/"
+  CMAKE_FLAGS: "-DCMAKE_BUILD_TYPE=DEBUG -DCI_STATIC=ON -DCI_STATIC_PIC=ON -G Ninja"
+  CMAKE_TEST_FLAGS: "-DCI_BUILD_TESTS=ON -DCMAKE_PREFIX_PATH=/usr/local/"
   MAKE: make
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
         run: |
           yum install -y gcc gcc-c++ make autoconf automake libtool cmake3 git ninja-build gdb
           ln -sf /usr/bin/cmake3 /usr/bin/cmake
-      - name: Checkout c-ares
+      - name: Checkout c-ci
         uses: actions/checkout@v1
       - name: Build GoogleTest
         # GoogleTest v1.10 doesn't require c++14
@@ -46,14 +46,14 @@ jobs:
           cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_GMOCK=ON -DINSTALL_GTEST=ON -G Ninja .
           ninja install
           cd ..
-      - name: "CMake: build and test c-ares"
+      - name: "CMake: build and test c-ci"
         env:
           BUILD_TYPE: CMAKE
           TEST_DEBUGGER: gdb
         run: |
           ./ci/build.sh
           ./ci/test.sh
-      - name: "Autotools: build and test c-ares"
+      - name: "Autotools: build and test c-ci"
         env:
           BUILD_TYPE: autotools
         # Can't run tests due to C++14 check and compiler not supporting C++14

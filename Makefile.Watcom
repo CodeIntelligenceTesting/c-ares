@@ -1,7 +1,7 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 #
-#  Watcom / OpenWatcom / Win32 makefile for cares.
+#  Watcom / OpenWatcom / Win32 makefile for cci.
 #  Quick hack by Guenter; comments to: /dev/nul
 #  Updated by Douglas R. Reno, comments to: renodr2002@gmail.com. 2023
 #
@@ -16,7 +16,7 @@ SYS_LIBS = $(%watcom)\lib386\nt;$(%watcom)\lib386
 !ifdef %libname
 LIBNAME = $(%libname)
 !else
-LIBNAME	= cares
+LIBNAME	= cci
 !endif
 TARGETS = $(LIBNAME).dll $(LIBNAME)_imp.lib $(LIBNAME).lib
 DEMOS   = adig.exe ahost.exe
@@ -42,7 +42,7 @@ RD = rmdir /q /s 2>NUL
 CP = copy
 
 CFLAGS = -3r -mf -hc -zff -zgf -zq -zm -zc -s -fr=con -w2 -fpi -oilrtfm -aa   &
-         -wcd=201 -bt=nt -d+ -dCARES_BUILDING_LIBRARY &
+         -wcd=201 -bt=nt -d+ -dCI_BUILDING_LIBRARY &
          -dNTDDI_VERSION=0x06020000 -I. -I.\include -I.\src\lib -I.\src\lib\include &
          $(SYS_INCL)
 
@@ -88,12 +88,12 @@ OBJS_STAT  = $+ $(OBJS) $-
 OBJ_DIR    = $(OBJ_BASE)\dyn
 OBJS_DYN   += $(OBJS) $-
 
-ARESBUILDH = ares_build.h
-RESOURCE   = $(OBJ_BASE)\dyn\cares.res
-ARESBUILDH = include\ares_build.h
+CIBUILDH = ci_build.h
+RESOURCE   = $(OBJ_BASE)\dyn\cci.res
+CIBUILDH = include\ci_build.h
 
-all: $(ARESBUILDH) $(OBJ_BASE) $(TARGETS) $(DEMOS) .SYMBOLIC
-	@echo Welcome to cares
+all: $(CIBUILDH) $(OBJ_BASE) $(TARGETS) $(DEMOS) .SYMBOLIC
+	@echo Welcome to cci
 
 $(OBJ_BASE):
 	-$(MD) $^@
@@ -113,7 +113,7 @@ $(OBJ_BASE):
 	-$(MD) $^@\dyn\util
 	-$(MD) $^@\tools
 
-$(ARESBUILDH): .EXISTSONLY
+$(CIBUILDH): .EXISTSONLY
 	@echo Make sure to run buildconf.bat!
 
 $(LIBNAME).dll: $(OBJS_DYN) $(RESOURCE) $(LINK_ARG)
@@ -122,14 +122,14 @@ $(LIBNAME).dll: $(OBJS_DYN) $(RESOURCE) $(LINK_ARG)
 $(LIBNAME).lib: $(OBJS_STAT) $(LIB_ARG)
 	$(AR) -q -b -c $^@ @$]@
 
-$(OBJ_BASE)\tools\ares_getopt.obj:
-	$(CC) $(CFLAGS) -DCARES_STATICLIB .\src\tools\ares_getopt.c -fo=$^@
+$(OBJ_BASE)\tools\ci_getopt.obj:
+	$(CC) $(CFLAGS) -DCI_STATICLIB .\src\tools\ci_getopt.c -fo=$^@
 
 adig.exe: $(LIBNAME).lib
 	$(CC) $(CFLAGS) src\tools\adig.c -fo=$(OBJ_BASE)\tools\adig.obj
 	$(LD) name $^@ system nt $(LFLAGS) file { $(OBJ_BASE)\tools\adig.obj $[@ } library $]@, ws2_32.lib, iphlpapi.lib
 
-ahost.exe: $(OBJ_BASE)\tools\ares_getopt.obj $(LIBNAME).lib
+ahost.exe: $(OBJ_BASE)\tools\ci_getopt.obj $(LIBNAME).lib
 	$(CC) $(CFLAGS) src\tools\ahost.c -fo=$(OBJ_BASE)\tools\ahost.obj
 	$(LD) name $^@ system nt $(LFLAGS) file { $(OBJ_BASE)\tools\ahost.obj $[@ } library $]@, ws2_32.lib, iphlpapi.lib
 
@@ -162,7 +162,7 @@ vclean realclean: clean .SYMBOLIC
 .c: .\src\lib
 
 .ERASE
-$(RESOURCE): src\lib\cares.rc .AUTODEPEND
+$(RESOURCE): src\lib\cci.rc .AUTODEPEND
 	$(RC) $(DEBUG) -q -r -zm -I..\include $(SYS_INCL) $[@ -fo=$^@
 
 .ERASE
@@ -195,31 +195,31 @@ $(RESOURCE): src\lib\cares.rc .AUTODEPEND
 
 .ERASE
 .c{$(OBJ_BASE)\stat}.obj:
-	$(CC) $(CFLAGS) -DCARES_STATICLIB .\src\lib\$^& -fo=$^@
+	$(CC) $(CFLAGS) -DCI_STATICLIB .\src\lib\$^& -fo=$^@
 
 .ERASE
 {dsa}.c{$(OBJ_BASE)\stat\dsa}.obj:
-	$(CC) $(CFLAGS) -DCARES_STATICLIB .\src\lib\dsa\$^& -fo=$^@
+	$(CC) $(CFLAGS) -DCI_STATICLIB .\src\lib\dsa\$^& -fo=$^@
 
 .ERASE
 {event}.c{$(OBJ_BASE)\stat\event}.obj:
-	$(CC) $(CFLAGS) -DCARES_STATICLIB .\src\lib\event\$^& -fo=$^@
+	$(CC) $(CFLAGS) -DCI_STATICLIB .\src\lib\event\$^& -fo=$^@
 
 .ERASE
 {legacy}.c{$(OBJ_BASE)\stat\legacy}.obj:
-	$(CC) $(CFLAGS) -DCARES_STATICLIB .\src\lib\legacy\$^& -fo=$^@
+	$(CC) $(CFLAGS) -DCI_STATICLIB .\src\lib\legacy\$^& -fo=$^@
 
 .ERASE
 {record}.c{$(OBJ_BASE)\stat\record}.obj:
-	$(CC) $(CFLAGS) -DCARES_STATICLIB .\src\lib\record\$^& -fo=$^@
+	$(CC) $(CFLAGS) -DCI_STATICLIB .\src\lib\record\$^& -fo=$^@
 
 .ERASE
 {str}.c{$(OBJ_BASE)\stat\str}.obj:
-	$(CC) $(CFLAGS) -DCARES_STATICLIB .\src\lib\str\$^& -fo=$^@
+	$(CC) $(CFLAGS) -DCI_STATICLIB .\src\lib\str\$^& -fo=$^@
 
 .ERASE
 {util}.c{$(OBJ_BASE)\stat\util}.obj:
-	$(CC) $(CFLAGS) -DCARES_STATICLIB .\src\lib\util\$^& -fo=$^@
+	$(CC) $(CFLAGS) -DCI_STATICLIB .\src\lib\util\$^& -fo=$^@
 
 $(LINK_ARG): $(__MAKEFILES__)
 	%create $^@

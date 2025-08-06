@@ -1,4 +1,4 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 name: MacOS
 on:
@@ -11,7 +11,7 @@ concurrency:
 
 env:
   TEST_FILTER: "-v --gtest_filter=-*LiveSearchTXT*:*LiveSearchANY*:*LiveGetLocalhostByAddr*"
-  CMAKE_FLAGS: "-DCMAKE_BUILD_TYPE=DEBUG -DCARES_STATIC=ON -DCARES_STATIC_PIC=ON -G Ninja"
+  CMAKE_FLAGS: "-DCMAKE_BUILD_TYPE=DEBUG -DCI_STATIC=ON -DCI_STATIC_PIC=ON -G Ninja"
   MAKE: make
 
 jobs:
@@ -21,30 +21,30 @@ jobs:
     steps:
       - name: Install packages
         run: brew install cmake googletest llvm autoconf automake libtool make ninja
-      - name: Checkout c-ares
+      - name: Checkout c-ci
         uses: actions/checkout@v4
       - name: "Make sure TCP FastOpen is enabled"
         run: sudo sysctl net.inet.tcp.fastopen=3
-      - name: "CMake: build and test c-ares"
+      - name: "CMake: build and test c-ci"
         env:
           BUILD_TYPE: CMAKE
-          CMAKE_TEST_FLAGS: "-DCARES_BUILD_TESTS=ON"
+          CMAKE_TEST_FLAGS: "-DCI_BUILD_TESTS=ON"
           TEST_DEBUGGER: lldb
         run: |
           ./ci/build.sh
           ./ci/test.sh
-      - name: "Autotools: build and test c-ares"
+      - name: "Autotools: build and test c-ci"
         env:
           BUILD_TYPE: autotools
           TEST_DEBUGGER: lldb
         run: |
           ./ci/build.sh
           ./ci/test.sh
-      - name: "CMake: UBSAN: build and test c-ares"
+      - name: "CMake: UBSAN: build and test c-ci"
         env:
           BUILD_TYPE: "ubsan"
           CC: "clang"
-          CMAKE_TEST_FLAGS: "-DCARES_BUILD_TESTS=ON"
+          CMAKE_TEST_FLAGS: "-DCI_BUILD_TESTS=ON"
           CFLAGS: "-fsanitize=undefined -fno-sanitize-recover"
           CXXFLAGS: "-fsanitize=undefined -fno-sanitize-recover"
           LDFLAGS: "-fsanitize=undefined"
@@ -52,11 +52,11 @@ jobs:
         run: |
           ./ci/build.sh
           ./ci/test.sh
-      - name: "CMake: ASAN: build and test c-ares"
+      - name: "CMake: ASAN: build and test c-ci"
         env:
           BUILD_TYPE: "asan"
           CC: "clang"
-          CMAKE_TEST_FLAGS: "-DCARES_BUILD_TESTS=ON"
+          CMAKE_TEST_FLAGS: "-DCI_BUILD_TESTS=ON"
           CFLAGS: "-fsanitize=address"
           CXXFLAGS: "-fsanitize=address"
           LDFLAGS: "-fsanitize=address"
@@ -64,12 +64,12 @@ jobs:
         run: |
           ./ci/build.sh
           ./ci/test.sh
-      - name: "Cmake: Static Analyzer: build c-ares"
+      - name: "Cmake: Static Analyzer: build c-ci"
         env:
           BUILD_TYPE: "analyze"
           CC: "clang"
           SCAN_WRAP: "/opt/homebrew/opt/llvm/bin/scan-build-py -v --status-bugs"
-          CMAKE_TEST_FLAGS: "-DCARES_BUILD_TESTS=OFF"
+          CMAKE_TEST_FLAGS: "-DCI_BUILD_TESTS=OFF"
           TEST_DEBUGGER: "lldb"
         run: |
           ./ci/build.sh
@@ -77,7 +77,7 @@ jobs:
       - name: "CMake: No TCP FastOpen"
         env:
           BUILD_TYPE: CMAKE
-          CMAKE_TEST_FLAGS: "-DCARES_BUILD_TESTS=ON"
+          CMAKE_TEST_FLAGS: "-DCI_BUILD_TESTS=ON"
           TEST_DEBUGGER: lldb
         run: |
           sudo sysctl net.inet.tcp.fastopen=0

@@ -1,0 +1,30 @@
+.\"
+.\" Copyright 1998 by the Massachusetts Institute of Technology.
+.\" SPDX-License-Identifier: MIT
+.\"
+.TH CI_FREE_HOSTENT 3 "23 July 1998"
+.SH NAME
+ci_free_hostent \- Free host structure allocated by ci functions
+.SH SYNOPSIS
+.nf
+#include <ci.h>
+
+void ci_free_hostent(struct hostent *\fIhost\fP)
+.fi
+.SH DESCRIPTION
+The
+.I ci_free_hostent
+function frees a
+.B struct hostent
+allocated by one of the functions \fIci_parse_a_reply(3)\fP,
+\fIci_parse_aaaa_reply(3)\fP, or \fIci_parse_ptr_reply(3)\fP.
+.SH NOTES
+It is not necessary (and is not correct) to free the host structure passed to
+the callback functions for \fIci_gethostbyname(3)\fP or
+\fIci_gethostbyaddr(3)\fP. c-ci will automatically free such host
+structures when the callback returns.
+.SH SEE ALSO
+.BR ci_parse_a_reply (3),
+.BR ci_parse_aaaa_reply (3),
+.BR ci_parse_ptr_reply (3),
+.BR ci_parse_ns_reply (3)

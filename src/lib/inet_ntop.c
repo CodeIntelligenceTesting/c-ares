@@ -17,7 +17,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "ares_private.h"
+#include "ci_private.h"
 
 #ifdef HAVE_NETINET_IN_H
 #  include <netinet/in.h>
@@ -26,8 +26,8 @@
 #  include <arpa/inet.h>
 #endif
 
-#include "ares_nameser.h"
-#include "ares_ipv6.h"
+#include "ci_nameser.h"
+#include "ci_ipv6.h"
 
 #ifdef USE_WINSOCK
 #  define SOCKERRNO        ((int)WSAGetLastError())
@@ -61,8 +61,8 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, size_t size);
  * author:
  *     Paul Vixie, 1996.
  */
-const char        *ares_inet_ntop(int af, const void *src, char *dst,
-                                  ares_socklen_t size)
+const char        *ci_inet_ntop(int af, const void *src, char *dst,
+                                  ci_socklen_t size)
 {
   switch (af) {
     case AF_INET:
@@ -102,7 +102,7 @@ static const char *inet_ntop4(const unsigned char *src, char *dst, size_t size)
     SET_SOCKERRNO(ENOSPC);
     return NULL;
   }
-  ares_strcpy(dst, tmp, size);
+  ci_strcpy(dst, tmp, size);
   return dst;
 }
 
@@ -125,7 +125,7 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, size_t size)
   char *tp;
 
   struct {
-    ares_ssize_t base;
+    ci_ssize_t base;
     size_t       len;
   } best, cur;
 
@@ -148,7 +148,7 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, size_t size)
   for (i = 0; i < (NS_IN6ADDRSZ / NS_INT16SZ); i++) {
     if (words[i] == 0) {
       if (cur.base == -1) {
-        cur.base = (ares_ssize_t)i;
+        cur.base = (ci_ssize_t)i;
         cur.len  = 1;
       } else {
         cur.len++;
@@ -195,7 +195,7 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, size_t size)
       if (!inet_ntop4(src + 12, tp, sizeof(tmp) - (size_t)(tp - tmp))) {
         return (NULL);
       }
-      tp += ares_strlen(tp);
+      tp += ci_strlen(tp);
       break;
     }
     tp += snprintf(tp, sizeof(tmp) - (size_t)(tp - tmp), "%x", words[i]);
@@ -214,6 +214,6 @@ static const char *inet_ntop6(const unsigned char *src, char *dst, size_t size)
     SET_SOCKERRNO(ENOSPC);
     return NULL;
   }
-  ares_strcpy(dst, tmp, size);
+  ci_strcpy(dst, tmp, size);
   return dst;
 }

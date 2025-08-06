@@ -1,7 +1,7 @@
 /* MIT License
  *
  * Copyright (c) 1998 Massachusetts Institute of Technology
- * Copyright (c) The c-ares project and its contributors
+ * Copyright (c) The c-ci project and its contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
  *
  * SPDX-License-Identifier: MIT
  */
-#include "ares_setup.h"
+#include "ci_setup.h"
 
 #ifdef HAVE_NETINET_IN_H
 #  include <netinet/in.h>
@@ -36,19 +36,19 @@
 #  include <netdb.h>
 #endif
 
-#include "ares_nameser.h"
+#include "ci_nameser.h"
 
 #ifdef HAVE_STRINGS_H
 #  include <strings.h>
 #endif
 
-#include "ares.h"
-#include "ares_array.h"
-#include "ares_buf.h"
-#include "ares_dns.h"
-#include "ares_getopt.h"
-#include "ares_mem.h"
-#include "ares_str.h"
+#include "ci.h"
+#include "ci_array.h"
+#include "ci_buf.h"
+#include "ci_dns.h"
+#include "ci_getopt.h"
+#include "ci_mem.h"
+#include "ci_str.h"
 
 #include "limits.h"
 
@@ -60,41 +60,41 @@ typedef struct {
   unsigned short port;
   size_t         tries;
   size_t         ndots;
-  ares_bool_t    tcp;
-  ares_bool_t    ignore_tc;
+  ci_bool_t    tcp;
+  ci_bool_t    ignore_tc;
   char          *search;
-  ares_bool_t    do_search;
-  ares_bool_t    aa_flag;
-  ares_bool_t    ad_flag;
-  ares_bool_t    cd_flag;
-  ares_bool_t    rd_flag;
-  /* ares_bool_t do_flag; */
-  ares_bool_t    edns;
+  ci_bool_t    do_search;
+  ci_bool_t    aa_flag;
+  ci_bool_t    ad_flag;
+  ci_bool_t    cd_flag;
+  ci_bool_t    rd_flag;
+  /* ci_bool_t do_flag; */
+  ci_bool_t    edns;
   size_t         udp_size;
-  ares_bool_t    primary;
-  ares_bool_t    aliases;
-  ares_bool_t    stayopen;
-  ares_bool_t    dns0x20;
-  ares_bool_t    display_class;
-  ares_bool_t    display_ttl;
-  ares_bool_t    display_command;
-  ares_bool_t    display_stats;
-  ares_bool_t    display_query;
-  ares_bool_t    display_question;
-  ares_bool_t    display_answer;
-  ares_bool_t    display_authority;
-  ares_bool_t    display_additional;
-  ares_bool_t    display_comments;
+  ci_bool_t    primary;
+  ci_bool_t    aliases;
+  ci_bool_t    stayopen;
+  ci_bool_t    dns0x20;
+  ci_bool_t    display_class;
+  ci_bool_t    display_ttl;
+  ci_bool_t    display_command;
+  ci_bool_t    display_stats;
+  ci_bool_t    display_query;
+  ci_bool_t    display_question;
+  ci_bool_t    display_answer;
+  ci_bool_t    display_authority;
+  ci_bool_t    display_additional;
+  ci_bool_t    display_comments;
 } dns_options_t;
 
 typedef struct {
   dns_options_t       opts;
-  ares_bool_t         is_help;
-  ares_bool_t         no_rcfile;
-  struct ares_options options;
+  ci_bool_t         is_help;
+  ci_bool_t         no_rcfile;
+  struct ci_options options;
   int                 optmask;
-  ares_dns_class_t    qclass;
-  ares_dns_rec_type_t qtype;
+  ci_dns_class_t    qclass;
+  ci_dns_rec_type_t qtype;
   char               *name;
   char               *servers;
   char                error[256];
@@ -192,53 +192,53 @@ static void free_config(void)
 static void print_help(void)
 {
   size_t i;
-  printf("adig version %s\n\n", ares_version(NULL));
+  printf("adig version %s\n\n", ci_version(NULL));
   for (i = 0; helpstr[i] != NULL; i++) {
     printf("%s\n", helpstr[i]);
   }
 }
 
-static void print_flags(ares_dns_flags_t flags)
+static void print_flags(ci_dns_flags_t flags)
 {
-  if (flags & ARES_FLAG_QR) {
+  if (flags & CI_FLAG_QR) {
     printf(" qr");
   }
-  if (flags & ARES_FLAG_AA) {
+  if (flags & CI_FLAG_AA) {
     printf(" aa");
   }
-  if (flags & ARES_FLAG_TC) {
+  if (flags & CI_FLAG_TC) {
     printf(" tc");
   }
-  if (flags & ARES_FLAG_RD) {
+  if (flags & CI_FLAG_RD) {
     printf(" rd");
   }
-  if (flags & ARES_FLAG_RA) {
+  if (flags & CI_FLAG_RA) {
     printf(" ra");
   }
-  if (flags & ARES_FLAG_AD) {
+  if (flags & CI_FLAG_AD) {
     printf(" ad");
   }
-  if (flags & ARES_FLAG_CD) {
+  if (flags & CI_FLAG_CD) {
     printf(" cd");
   }
 }
 
-static void print_header(const ares_dns_record_t *dnsrec)
+static void print_header(const ci_dns_record_t *dnsrec)
 {
   printf(";; ->>HEADER<<- opcode: %s, status: %s, id: %u\n",
-         ares_dns_opcode_tostr(ares_dns_record_get_opcode(dnsrec)),
-         ares_dns_rcode_tostr(ares_dns_record_get_rcode(dnsrec)),
-         ares_dns_record_get_id(dnsrec));
+         ci_dns_opcode_tostr(ci_dns_record_get_opcode(dnsrec)),
+         ci_dns_rcode_tostr(ci_dns_record_get_rcode(dnsrec)),
+         ci_dns_record_get_id(dnsrec));
   printf(";; flags:");
-  print_flags(ares_dns_record_get_flags(dnsrec));
+  print_flags(ci_dns_record_get_flags(dnsrec));
   printf("; QUERY: %u, ANSWER: %u, AUTHORITY: %u, ADDITIONAL: %u\n\n",
-         (unsigned int)ares_dns_record_query_cnt(dnsrec),
-         (unsigned int)ares_dns_record_rr_cnt(dnsrec, ARES_SECTION_ANSWER),
-         (unsigned int)ares_dns_record_rr_cnt(dnsrec, ARES_SECTION_AUTHORITY),
-         (unsigned int)ares_dns_record_rr_cnt(dnsrec, ARES_SECTION_ADDITIONAL));
+         (unsigned int)ci_dns_record_query_cnt(dnsrec),
+         (unsigned int)ci_dns_record_rr_cnt(dnsrec, CI_SECTION_ANSWER),
+         (unsigned int)ci_dns_record_rr_cnt(dnsrec, CI_SECTION_AUTHORITY),
+         (unsigned int)ci_dns_record_rr_cnt(dnsrec, CI_SECTION_ADDITIONAL));
 }
 
-static void print_question(const ares_dns_record_t *dnsrec)
+static void print_question(const ci_dns_record_t *dnsrec)
 {
   size_t i;
 
@@ -246,13 +246,13 @@ static void print_question(const ares_dns_record_t *dnsrec)
     printf(";; QUESTION SECTION:\n");
   }
 
-  for (i = 0; i < ares_dns_record_query_cnt(dnsrec); i++) {
+  for (i = 0; i < ci_dns_record_query_cnt(dnsrec); i++) {
     const char         *name;
-    ares_dns_rec_type_t qtype;
-    ares_dns_class_t    qclass;
+    ci_dns_rec_type_t qtype;
+    ci_dns_class_t    qclass;
     size_t              len;
-    if (ares_dns_record_query_get(dnsrec, i, &name, &qtype, &qclass) !=
-        ARES_SUCCESS) {
+    if (ci_dns_record_query_get(dnsrec, i, &name, &qtype, &qclass) !=
+        CI_SUCCESS) {
       return;
     }
     if (name == NULL) {
@@ -268,10 +268,10 @@ static void print_question(const ares_dns_record_t *dnsrec)
     }
 
     if (global_config.opts.display_class) {
-      printf("%s\t", ares_dns_class_tostr(qclass));
+      printf("%s\t", ci_dns_class_tostr(qclass));
     }
 
-    printf("%s\n", ares_dns_rec_type_tostr(qtype));
+    printf("%s\n", ci_dns_rec_type_tostr(qtype));
   }
 
   if (global_config.opts.display_comments) {
@@ -296,7 +296,7 @@ static void print_opt_addr_list(const unsigned char *val, size_t val_len)
   }
   for (i = 0; i < val_len; i += 4) {
     char buf[256] = "";
-    ares_inet_ntop(AF_INET, val + i, buf, sizeof(buf));
+    ci_inet_ntop(AF_INET, val + i, buf, sizeof(buf));
     if (i != 0) {
       printf(",");
     }
@@ -314,7 +314,7 @@ static void print_opt_addr6_list(const unsigned char *val, size_t val_len)
   for (i = 0; i < val_len; i += 16) {
     char buf[256] = "";
 
-    ares_inet_ntop(AF_INET6, val + i, buf, sizeof(buf));
+    ci_inet_ntop(AF_INET6, val + i, buf, sizeof(buf));
     if (i != 0) {
       printf(",");
     }
@@ -385,20 +385,20 @@ static void print_opt_str_list(const unsigned char *val, size_t val_len)
   while (val_len) {
     long           read_len = 0;
     unsigned char *str      = NULL;
-    ares_status_t  status;
+    ci_status_t  status;
 
     if (cnt) {
       printf(",");
     }
 
-    status = (ares_status_t)ares_expand_string(val, val, (int)val_len, &str,
+    status = (ci_status_t)ci_expand_string(val, val, (int)val_len, &str,
                                                &read_len);
-    if (status != ARES_SUCCESS) {
+    if (status != CI_SUCCESS) {
       printf("INVALID");
       break;
     }
     printf("%s", str);
-    ares_free_string(str);
+    ci_free_string(str);
     val_len -= (size_t)read_len;
     val     += read_len;
     cnt++;
@@ -411,14 +411,14 @@ static void print_opt_name(const unsigned char *val, size_t val_len)
   char *str      = NULL;
   long  read_len = 0;
 
-  if (ares_expand_name(val, val, (int)val_len, &str, &read_len) !=
-      ARES_SUCCESS) {
+  if (ci_expand_name(val, val, (int)val_len, &str, &read_len) !=
+      CI_SUCCESS) {
     printf("INVALID!");
     return;
   }
 
   printf("%s.", str);
-  ares_free_string(str);
+  ci_free_string(str);
 }
 
 static void print_opt_bin(const unsigned char *val, size_t val_len)
@@ -430,12 +430,12 @@ static void print_opt_bin(const unsigned char *val, size_t val_len)
   }
 }
 
-static ares_bool_t adig_isprint(int ch)
+static ci_bool_t adig_isprint(int ch)
 {
   if (ch >= 0x20 && ch <= 0x7E) {
-    return ARES_TRUE;
+    return CI_TRUE;
   }
-  return ARES_FALSE;
+  return CI_FALSE;
 }
 
 static void print_opt_binp(const unsigned char *val, size_t val_len)
@@ -452,11 +452,11 @@ static void print_opt_binp(const unsigned char *val, size_t val_len)
   printf("\"");
 }
 
-static void print_opts(const ares_dns_rr_t *rr, ares_dns_rr_key_t key)
+static void print_opts(const ci_dns_rr_t *rr, ci_dns_rr_key_t key)
 {
   size_t i;
 
-  for (i = 0; i < ares_dns_rr_get_opt_cnt(rr, key); i++) {
+  for (i = 0; i < ci_dns_rr_get_opt_cnt(rr, key); i++) {
     size_t               val_len = 0;
     const unsigned char *val     = NULL;
     unsigned short       opt;
@@ -466,8 +466,8 @@ static void print_opts(const ares_dns_rr_t *rr, ares_dns_rr_key_t key)
       printf(" ");
     }
 
-    opt  = ares_dns_rr_get_opt(rr, key, i, &val, &val_len);
-    name = ares_dns_opt_get_name(key, opt);
+    opt  = ci_dns_rr_get_opt(rr, key, i, &val, &val_len);
+    name = ci_dns_opt_get_name(key, opt);
     if (name == NULL) {
       printf("key%u", (unsigned int)opt);
     } else {
@@ -479,111 +479,111 @@ static void print_opts(const ares_dns_rr_t *rr, ares_dns_rr_key_t key)
 
     printf("=");
 
-    switch (ares_dns_opt_get_datatype(key, opt)) {
-      case ARES_OPT_DATATYPE_NONE:
+    switch (ci_dns_opt_get_datatype(key, opt)) {
+      case CI_OPT_DATATYPE_NONE:
         print_opt_none(val, val_len);
         break;
-      case ARES_OPT_DATATYPE_U8_LIST:
+      case CI_OPT_DATATYPE_U8_LIST:
         print_opt_u8_list(val, val_len);
         break;
-      case ARES_OPT_DATATYPE_INADDR4_LIST:
+      case CI_OPT_DATATYPE_INADDR4_LIST:
         print_opt_addr_list(val, val_len);
         break;
-      case ARES_OPT_DATATYPE_INADDR6_LIST:
+      case CI_OPT_DATATYPE_INADDR6_LIST:
         print_opt_addr6_list(val, val_len);
         break;
-      case ARES_OPT_DATATYPE_U16:
-      case ARES_OPT_DATATYPE_U16_LIST:
+      case CI_OPT_DATATYPE_U16:
+      case CI_OPT_DATATYPE_U16_LIST:
         print_opt_u16_list(val, val_len);
         break;
-      case ARES_OPT_DATATYPE_U32:
-      case ARES_OPT_DATATYPE_U32_LIST:
+      case CI_OPT_DATATYPE_U32:
+      case CI_OPT_DATATYPE_U32_LIST:
         print_opt_u32_list(val, val_len);
         break;
-      case ARES_OPT_DATATYPE_STR_LIST:
+      case CI_OPT_DATATYPE_STR_LIST:
         print_opt_str_list(val, val_len);
         break;
-      case ARES_OPT_DATATYPE_BIN:
+      case CI_OPT_DATATYPE_BIN:
         print_opt_bin(val, val_len);
         break;
-      case ARES_OPT_DATATYPE_NAME:
+      case CI_OPT_DATATYPE_NAME:
         print_opt_name(val, val_len);
         break;
     }
   }
 }
 
-static void print_addr(const ares_dns_rr_t *rr, ares_dns_rr_key_t key)
+static void print_addr(const ci_dns_rr_t *rr, ci_dns_rr_key_t key)
 {
-  const struct in_addr *addr     = ares_dns_rr_get_addr(rr, key);
+  const struct in_addr *addr     = ci_dns_rr_get_addr(rr, key);
   char                  buf[256] = "";
 
-  ares_inet_ntop(AF_INET, addr, buf, sizeof(buf));
+  ci_inet_ntop(AF_INET, addr, buf, sizeof(buf));
   printf("%s", buf);
 }
 
-static void print_addr6(const ares_dns_rr_t *rr, ares_dns_rr_key_t key)
+static void print_addr6(const ci_dns_rr_t *rr, ci_dns_rr_key_t key)
 {
-  const struct ares_in6_addr *addr     = ares_dns_rr_get_addr6(rr, key);
+  const struct ci_in6_addr *addr     = ci_dns_rr_get_addr6(rr, key);
   char                        buf[256] = "";
 
-  ares_inet_ntop(AF_INET6, addr, buf, sizeof(buf));
+  ci_inet_ntop(AF_INET6, addr, buf, sizeof(buf));
   printf("%s", buf);
 }
 
-static void print_u8(const ares_dns_rr_t *rr, ares_dns_rr_key_t key)
+static void print_u8(const ci_dns_rr_t *rr, ci_dns_rr_key_t key)
 {
-  unsigned char u8 = ares_dns_rr_get_u8(rr, key);
+  unsigned char u8 = ci_dns_rr_get_u8(rr, key);
   printf("%u", (unsigned int)u8);
 }
 
-static void print_u16(const ares_dns_rr_t *rr, ares_dns_rr_key_t key)
+static void print_u16(const ci_dns_rr_t *rr, ci_dns_rr_key_t key)
 {
-  unsigned short u16 = ares_dns_rr_get_u16(rr, key);
+  unsigned short u16 = ci_dns_rr_get_u16(rr, key);
   printf("%u", (unsigned int)u16);
 }
 
-static void print_u32(const ares_dns_rr_t *rr, ares_dns_rr_key_t key)
+static void print_u32(const ci_dns_rr_t *rr, ci_dns_rr_key_t key)
 {
-  unsigned int u32 = ares_dns_rr_get_u32(rr, key);
+  unsigned int u32 = ci_dns_rr_get_u32(rr, key);
   printf("%u", u32);
 }
 
-static void print_name(const ares_dns_rr_t *rr, ares_dns_rr_key_t key)
+static void print_name(const ci_dns_rr_t *rr, ci_dns_rr_key_t key)
 {
-  const char *str = ares_dns_rr_get_str(rr, key);
+  const char *str = ci_dns_rr_get_str(rr, key);
   printf("%s.", str);
 }
 
-static void print_str(const ares_dns_rr_t *rr, ares_dns_rr_key_t key)
+static void print_str(const ci_dns_rr_t *rr, ci_dns_rr_key_t key)
 {
-  const char *str = ares_dns_rr_get_str(rr, key);
+  const char *str = ci_dns_rr_get_str(rr, key);
   printf("\"%s\"", str);
 }
 
-static void print_bin(const ares_dns_rr_t *rr, ares_dns_rr_key_t key)
+static void print_bin(const ci_dns_rr_t *rr, ci_dns_rr_key_t key)
 {
   size_t               len  = 0;
-  const unsigned char *binp = ares_dns_rr_get_bin(rr, key, &len);
+  const unsigned char *binp = ci_dns_rr_get_bin(rr, key, &len);
   print_opt_bin(binp, len);
 }
 
-static void print_binp(const ares_dns_rr_t *rr, ares_dns_rr_key_t key)
+static void print_binp(const ci_dns_rr_t *rr, ci_dns_rr_key_t key)
 {
   size_t               len;
-  const unsigned char *binp = ares_dns_rr_get_bin(rr, key, &len);
+  const unsigned char *binp = ci_dns_rr_get_bin(rr, key, &len);
 
   print_opt_binp(binp, len);
 }
 
-static void print_abinp(const ares_dns_rr_t *rr, ares_dns_rr_key_t key)
+static void print_abinp(const ci_dns_rr_t *rr, ci_dns_rr_key_t key)
 {
   size_t i;
-  size_t cnt = ares_dns_rr_get_abin_cnt(rr, key);
+  size_t cnt = ci_dns_rr_get_abin_cnt(rr, key);
 
   for (i = 0; i < cnt; i++) {
     size_t               len;
-    const unsigned char *binp = ares_dns_rr_get_abin(rr, key, i, &len);
+    const unsigned char *binp = ci_dns_rr_get_abin(rr, key, i, &len);
     if (i != 0) {
       printf(" ");
     }
@@ -591,13 +591,13 @@ static void print_abinp(const ares_dns_rr_t *rr, ares_dns_rr_key_t key)
   }
 }
 
-static void print_rr(const ares_dns_rr_t *rr)
+static void print_rr(const ci_dns_rr_t *rr)
 {
-  const char              *name     = ares_dns_rr_get_name(rr);
+  const char              *name     = ci_dns_rr_get_name(rr);
   size_t                   len      = 0;
   size_t                   keys_cnt = 0;
-  ares_dns_rec_type_t      rtype    = ares_dns_rr_get_type(rr);
-  const ares_dns_rr_key_t *keys     = ares_dns_rr_get_keys(rtype, &keys_cnt);
+  ci_dns_rec_type_t      rtype    = ci_dns_rr_get_type(rr);
+  const ci_dns_rr_key_t *keys     = ci_dns_rr_get_keys(rtype, &keys_cnt);
   size_t                   i;
 
   if (name == NULL) {
@@ -612,54 +612,54 @@ static void print_rr(const ares_dns_rr_t *rr)
   }
 
   if (global_config.opts.display_ttl) {
-    printf("%u\t", ares_dns_rr_get_ttl(rr));
+    printf("%u\t", ci_dns_rr_get_ttl(rr));
   }
 
   if (global_config.opts.display_class) {
-    printf("%s\t", ares_dns_class_tostr(ares_dns_rr_get_class(rr)));
+    printf("%s\t", ci_dns_class_tostr(ci_dns_rr_get_class(rr)));
   }
 
-  printf("%s\t", ares_dns_rec_type_tostr(rtype));
+  printf("%s\t", ci_dns_rec_type_tostr(rtype));
 
   /* Output params here */
   for (i = 0; i < keys_cnt; i++) {
-    ares_dns_datatype_t datatype = ares_dns_rr_key_datatype(keys[i]);
+    ci_dns_datatype_t datatype = ci_dns_rr_key_datatype(keys[i]);
     if (i != 0) {
       printf(" ");
     }
 
     switch (datatype) {
-      case ARES_DATATYPE_INADDR:
+      case CI_DATATYPE_INADDR:
         print_addr(rr, keys[i]);
         break;
-      case ARES_DATATYPE_INADDR6:
+      case CI_DATATYPE_INADDR6:
         print_addr6(rr, keys[i]);
         break;
-      case ARES_DATATYPE_U8:
+      case CI_DATATYPE_U8:
         print_u8(rr, keys[i]);
         break;
-      case ARES_DATATYPE_U16:
+      case CI_DATATYPE_U16:
         print_u16(rr, keys[i]);
         break;
-      case ARES_DATATYPE_U32:
+      case CI_DATATYPE_U32:
         print_u32(rr, keys[i]);
         break;
-      case ARES_DATATYPE_NAME:
+      case CI_DATATYPE_NAME:
         print_name(rr, keys[i]);
         break;
-      case ARES_DATATYPE_STR:
+      case CI_DATATYPE_STR:
         print_str(rr, keys[i]);
         break;
-      case ARES_DATATYPE_BIN:
+      case CI_DATATYPE_BIN:
         print_bin(rr, keys[i]);
         break;
-      case ARES_DATATYPE_BINP:
+      case CI_DATATYPE_BINP:
         print_binp(rr, keys[i]);
         break;
-      case ARES_DATATYPE_ABINP:
+      case CI_DATATYPE_ABINP:
         print_abinp(rr, keys[i]);
         break;
-      case ARES_DATATYPE_OPT:
+      case CI_DATATYPE_OPT:
         print_opts(rr, keys[i]);
         break;
     }
@@ -668,36 +668,36 @@ static void print_rr(const ares_dns_rr_t *rr)
   printf("\n");
 }
 
-static const ares_dns_rr_t *has_opt(const ares_dns_record_t *dnsrec,
-                                    ares_dns_section_t       section)
+static const ci_dns_rr_t *has_opt(const ci_dns_record_t *dnsrec,
+                                    ci_dns_section_t       section)
 {
   size_t i;
-  for (i = 0; i < ares_dns_record_rr_cnt(dnsrec, section); i++) {
-    const ares_dns_rr_t *rr = ares_dns_record_rr_get_const(dnsrec, section, i);
-    if (ares_dns_rr_get_type(rr) == ARES_REC_TYPE_OPT) {
+  for (i = 0; i < ci_dns_record_rr_cnt(dnsrec, section); i++) {
+    const ci_dns_rr_t *rr = ci_dns_record_rr_get_const(dnsrec, section, i);
+    if (ci_dns_rr_get_type(rr) == CI_REC_TYPE_OPT) {
       return rr;
     }
   }
   return NULL;
 }
 
-static void print_section(const ares_dns_record_t *dnsrec,
-                          ares_dns_section_t       section)
+static void print_section(const ci_dns_record_t *dnsrec,
+                          ci_dns_section_t       section)
 {
   size_t i;
 
-  if (ares_dns_record_rr_cnt(dnsrec, section) == 0 ||
-      (ares_dns_record_rr_cnt(dnsrec, section) == 1 &&
+  if (ci_dns_record_rr_cnt(dnsrec, section) == 0 ||
+      (ci_dns_record_rr_cnt(dnsrec, section) == 1 &&
        has_opt(dnsrec, section) != NULL)) {
     return;
   }
 
   if (global_config.opts.display_comments) {
-    printf(";; %s SECTION:\n", ares_dns_section_tostr(section));
+    printf(";; %s SECTION:\n", ci_dns_section_tostr(section));
   }
-  for (i = 0; i < ares_dns_record_rr_cnt(dnsrec, section); i++) {
-    const ares_dns_rr_t *rr = ares_dns_record_rr_get_const(dnsrec, section, i);
-    if (ares_dns_rr_get_type(rr) == ARES_REC_TYPE_OPT) {
+  for (i = 0; i < ci_dns_record_rr_cnt(dnsrec, section); i++) {
+    const ci_dns_rr_t *rr = ci_dns_record_rr_get_const(dnsrec, section, i);
+    if (ci_dns_rr_get_type(rr) == CI_REC_TYPE_OPT) {
       continue;
     }
     print_rr(rr);
@@ -707,9 +707,9 @@ static void print_section(const ares_dns_record_t *dnsrec,
   }
 }
 
-static void print_opt_psuedosection(const ares_dns_record_t *dnsrec)
+static void print_opt_psuedosection(const ci_dns_record_t *dnsrec)
 {
-  const ares_dns_rr_t *rr         = has_opt(dnsrec, ARES_SECTION_ADDITIONAL);
+  const ci_dns_rr_t *rr         = has_opt(dnsrec, CI_SECTION_ADDITIONAL);
   const unsigned char *cookie     = NULL;
   size_t               cookie_len = 0;
 
@@ -717,16 +717,16 @@ static void print_opt_psuedosection(const ares_dns_record_t *dnsrec)
     return;
   }
 
-  if (!ares_dns_rr_get_opt_byid(rr, ARES_RR_OPT_OPTIONS, ARES_OPT_PARAM_COOKIE,
+  if (!ci_dns_rr_get_opt_byid(rr, CI_RR_OPT_OPTIONS, CI_OPT_PARAM_COOKIE,
                                 &cookie, &cookie_len)) {
     cookie = NULL;
   }
 
   printf(";; OPT PSEUDOSECTION:\n");
   printf("; EDNS: version: %u, flags: %u; udp: %u\n",
-         (unsigned int)ares_dns_rr_get_u8(rr, ARES_RR_OPT_VERSION),
-         (unsigned int)ares_dns_rr_get_u16(rr, ARES_RR_OPT_FLAGS),
-         (unsigned int)ares_dns_rr_get_u16(rr, ARES_RR_OPT_UDP_SIZE));
+         (unsigned int)ci_dns_rr_get_u8(rr, CI_RR_OPT_VERSION),
+         (unsigned int)ci_dns_rr_get_u16(rr, CI_RR_OPT_FLAGS),
+         (unsigned int)ci_dns_rr_get_u16(rr, CI_RR_OPT_UDP_SIZE));
 
   if (cookie) {
     printf("; COOKIE: ");
@@ -735,7 +735,7 @@ static void print_opt_psuedosection(const ares_dns_record_t *dnsrec)
   }
 }
 
-static void print_record(const ares_dns_record_t *dnsrec)
+static void print_record(const ci_dns_record_t *dnsrec)
 {
   if (global_config.opts.display_comments) {
     print_header(dnsrec);
@@ -747,41 +747,41 @@ static void print_record(const ares_dns_record_t *dnsrec)
   }
 
   if (global_config.opts.display_answer) {
-    print_section(dnsrec, ARES_SECTION_ANSWER);
+    print_section(dnsrec, CI_SECTION_ANSWER);
   }
 
   if (global_config.opts.display_additional) {
-    print_section(dnsrec, ARES_SECTION_ADDITIONAL);
+    print_section(dnsrec, CI_SECTION_ADDITIONAL);
   }
 
   if (global_config.opts.display_authority) {
-    print_section(dnsrec, ARES_SECTION_AUTHORITY);
+    print_section(dnsrec, CI_SECTION_AUTHORITY);
   }
 
   if (global_config.opts.display_stats) {
     unsigned char *abuf = NULL;
     size_t         alen = 0;
-    ares_dns_write(dnsrec, &abuf, &alen);
+    ci_dns_write(dnsrec, &abuf, &alen);
     printf(";; MSG SIZE  rcvd: %d\n\n", (int)alen);
-    ares_free_string(abuf);
+    ci_free_string(abuf);
   }
 }
 
-static void callback(void *arg, ares_status_t status, size_t timeouts,
-                     const ares_dns_record_t *dnsrec)
+static void callback(void *arg, ci_status_t status, size_t timeouts,
+                     const ci_dns_record_t *dnsrec)
 {
   (void)arg;
   (void)timeouts;
 
   if (global_config.opts.display_comments) {
     /* We got a "Server status" */
-    if (status >= ARES_SUCCESS && status <= ARES_EREFUSED) {
+    if (status >= CI_SUCCESS && status <= CI_EREFUSED) {
       printf(";; Got answer:");
     } else {
       printf(";;");
     }
-    if (status != ARES_SUCCESS) {
-      printf(" %s", ares_strerror((int)status));
+    if (status != CI_SUCCESS) {
+      printf(" %s", ci_strerror((int)status));
     }
     printf("\n");
   }
@@ -789,65 +789,65 @@ static void callback(void *arg, ares_status_t status, size_t timeouts,
   print_record(dnsrec);
 }
 
-static ares_status_t enqueue_query(ares_channel_t *channel)
+static ci_status_t enqueue_query(ci_channel_t *channel)
 {
-  ares_dns_record_t *dnsrec = NULL;
-  ares_dns_rr_t     *rr     = NULL;
-  ares_status_t      status;
+  ci_dns_record_t *dnsrec = NULL;
+  ci_dns_rr_t     *rr     = NULL;
+  ci_status_t      status;
   unsigned short     flags    = 0;
   char              *nametemp = NULL;
   const char        *name     = global_config.name;
 
   if (global_config.opts.aa_flag) {
-    flags |= ARES_FLAG_AA;
+    flags |= CI_FLAG_AA;
   }
 
   if (global_config.opts.ad_flag) {
-    flags |= ARES_FLAG_AD;
+    flags |= CI_FLAG_AD;
   }
 
   if (global_config.opts.cd_flag) {
-    flags |= ARES_FLAG_CD;
+    flags |= CI_FLAG_CD;
   }
 
   if (global_config.opts.rd_flag) {
-    flags |= ARES_FLAG_RD;
+    flags |= CI_FLAG_RD;
   }
 
-  status = ares_dns_record_create(&dnsrec, 0, flags, ARES_OPCODE_QUERY,
-                                  ARES_RCODE_NOERROR);
-  if (status != ARES_SUCCESS) {
+  status = ci_dns_record_create(&dnsrec, 0, flags, CI_OPCODE_QUERY,
+                                  CI_RCODE_NOERROR);
+  if (status != CI_SUCCESS) {
     goto done;
   }
 
   /* If it is a PTR record, convert from ip address into in-arpa form
    * automatically */
-  if (global_config.qtype == ARES_REC_TYPE_PTR) {
-    struct ares_addr addr;
+  if (global_config.qtype == CI_REC_TYPE_PTR) {
+    struct ci_addr addr;
     size_t           len;
     addr.family = AF_UNSPEC;
 
-    if (ares_dns_pton(name, &addr, &len) != NULL) {
-      nametemp = ares_dns_addr_to_ptr(&addr);
+    if (ci_dns_pton(name, &addr, &len) != NULL) {
+      nametemp = ci_dns_addr_to_ptr(&addr);
       name     = nametemp;
     }
   }
 
-  status = ares_dns_record_query_add(dnsrec, name, global_config.qtype,
+  status = ci_dns_record_query_add(dnsrec, name, global_config.qtype,
                                      global_config.qclass);
-  if (status != ARES_SUCCESS) {
+  if (status != CI_SUCCESS) {
     goto done;
   }
 
   if (global_config.opts.edns) {
-    status = ares_dns_record_rr_add(&rr, dnsrec, ARES_SECTION_ADDITIONAL, "",
-                                    ARES_REC_TYPE_OPT, ARES_CLASS_IN, 0);
-    if (status != ARES_SUCCESS) {
+    status = ci_dns_record_rr_add(&rr, dnsrec, CI_SECTION_ADDITIONAL, "",
+                                    CI_REC_TYPE_OPT, CI_CLASS_IN, 0);
+    if (status != CI_SUCCESS) {
       goto done;
     }
-    ares_dns_rr_set_u16(rr, ARES_RR_OPT_UDP_SIZE,
+    ci_dns_rr_set_u16(rr, CI_RR_OPT_UDP_SIZE,
                         (unsigned short)global_config.opts.udp_size);
-    ares_dns_rr_set_u8(rr, ARES_RR_OPT_VERSION, 0);
+    ci_dns_rr_set_u8(rr, CI_RR_OPT_VERSION, 0);
   }
 
   if (global_config.opts.display_query) {
@@ -856,18 +856,18 @@ static ares_status_t enqueue_query(ares_channel_t *channel)
   }
 
   if (global_config.opts.do_search) {
-    status = ares_search_dnsrec(channel, dnsrec, callback, NULL);
+    status = ci_search_dnsrec(channel, dnsrec, callback, NULL);
   } else {
-    status = ares_send_dnsrec(channel, dnsrec, callback, NULL, NULL);
+    status = ci_send_dnsrec(channel, dnsrec, callback, NULL, NULL);
   }
 
 done:
-  ares_free_string(nametemp);
-  ares_dns_record_destroy(dnsrec);
+  ci_free_string(nametemp);
+  ci_dns_record_destroy(dnsrec);
   return status;
 }
 
-static int event_loop(ares_channel_t *channel)
+static int event_loop(ci_channel_t *channel)
 {
   while (1) {
     fd_set          read_fds;
@@ -881,11 +881,11 @@ static int event_loop(ares_channel_t *channel)
     FD_ZERO(&write_fds);
     memset(&tv, 0, sizeof(tv));
 
-    nfds = ares_fds(channel, &read_fds, &write_fds);
+    nfds = ci_fds(channel, &read_fds, &write_fds);
     if (nfds == 0) {
       break;
     }
-    tvp = ares_timeout(channel, NULL, &tv);
+    tvp = ci_timeout(channel, NULL, &tv);
     if (tvp == NULL) {
       break;
     }
@@ -901,7 +901,7 @@ static int event_loop(ares_channel_t *channel)
         return 1;
       }
     }
-    ares_process(channel, &read_fds, &write_fds);
+    ci_process(channel, &read_fds, &write_fds);
   }
   return 0;
 }
@@ -917,58 +917,58 @@ typedef enum {
 /* Callback called with OPT_TYPE_FUNC when processing options.
  * \param[in] prefix  prefix character for option
  * \param[in] name    name for option
- * \param[in] is_true ARES_TRUE unless option was prefixed with 'no'
+ * \param[in] is_true CI_TRUE unless option was prefixed with 'no'
  * \param[in] value   value for option
- * \return ARES_TRUE on success, ARES_FALSE on failure.  Should fill in
+ * \return CI_TRUE on success, CI_FALSE on failure.  Should fill in
  *         global_config.error on error */
-typedef ares_bool_t (*dig_opt_cb_t)(char prefix, const char *name,
-                                    ares_bool_t is_true, const char *value);
+typedef ci_bool_t (*dig_opt_cb_t)(char prefix, const char *name,
+                                    ci_bool_t is_true, const char *value);
 
-static ares_bool_t opt_class_cb(char prefix, const char *name,
-                                ares_bool_t is_true, const char *value)
+static ci_bool_t opt_class_cb(char prefix, const char *name,
+                                ci_bool_t is_true, const char *value)
 {
   (void)prefix;
   (void)name;
   (void)is_true;
 
-  if (!ares_dns_class_fromstr(&global_config.qclass, value)) {
+  if (!ci_dns_class_fromstr(&global_config.qclass, value)) {
     snprintf(global_config.error, sizeof(global_config.error),
              "unrecognized class %s", value);
-    return ARES_FALSE;
+    return CI_FALSE;
   }
 
-  return ARES_TRUE;
+  return CI_TRUE;
 }
 
-static ares_bool_t opt_type_cb(char prefix, const char *name,
-                               ares_bool_t is_true, const char *value)
+static ci_bool_t opt_type_cb(char prefix, const char *name,
+                               ci_bool_t is_true, const char *value)
 {
   (void)prefix;
   (void)name;
   (void)is_true;
 
-  if (!ares_dns_rec_type_fromstr(&global_config.qtype, value)) {
+  if (!ci_dns_rec_type_fromstr(&global_config.qtype, value)) {
     snprintf(global_config.error, sizeof(global_config.error),
              "unrecognized record type %s", value);
-    return ARES_FALSE;
+    return CI_FALSE;
   }
-  return ARES_TRUE;
+  return CI_TRUE;
 }
 
-static ares_bool_t opt_ptr_cb(char prefix, const char *name,
-                              ares_bool_t is_true, const char *value)
+static ci_bool_t opt_ptr_cb(char prefix, const char *name,
+                              ci_bool_t is_true, const char *value)
 {
   (void)prefix;
   (void)name;
   (void)is_true;
-  global_config.qtype = ARES_REC_TYPE_PTR;
-  ares_free(global_config.name);
+  global_config.qtype = CI_REC_TYPE_PTR;
+  ci_free(global_config.name);
   global_config.name = strdup(value);
-  return ARES_TRUE;
+  return CI_TRUE;
 }
 
-static ares_bool_t opt_all_cb(char prefix, const char *name,
-                              ares_bool_t is_true, const char *value)
+static ci_bool_t opt_all_cb(char prefix, const char *name,
+                              ci_bool_t is_true, const char *value)
 {
   (void)prefix;
   (void)name;
@@ -981,11 +981,11 @@ static ares_bool_t opt_all_cb(char prefix, const char *name,
   global_config.opts.display_authority  = is_true;
   global_config.opts.display_additional = is_true;
   global_config.opts.display_comments   = is_true;
-  return ARES_TRUE;
+  return CI_TRUE;
 }
 
-static ares_bool_t opt_edns_cb(char prefix, const char *name,
-                               ares_bool_t is_true, const char *value)
+static ci_bool_t opt_edns_cb(char prefix, const char *name,
+                               ci_bool_t is_true, const char *value)
 {
   (void)prefix;
   (void)name;
@@ -994,30 +994,30 @@ static ares_bool_t opt_edns_cb(char prefix, const char *name,
   if (is_true && value != NULL && atoi(value) > 0) {
     snprintf(global_config.error, sizeof(global_config.error),
              "edns 0 only supported");
-    return ARES_FALSE;
+    return CI_FALSE;
   }
-  return ARES_TRUE;
+  return CI_TRUE;
 }
 
-static ares_bool_t opt_retry_cb(char prefix, const char *name,
-                                ares_bool_t is_true, const char *value)
+static ci_bool_t opt_retry_cb(char prefix, const char *name,
+                                ci_bool_t is_true, const char *value)
 {
   (void)prefix;
   (void)name;
   (void)is_true;
 
-  if (!ares_str_isnum(value)) {
+  if (!ci_str_isnum(value)) {
     snprintf(global_config.error, sizeof(global_config.error),
              "value not numeric");
-    return ARES_FALSE;
+    return CI_FALSE;
   }
 
   global_config.opts.tries = strtoul(value, NULL, 10) + 1;
-  return ARES_TRUE;
+  return CI_TRUE;
 }
 
-static ares_bool_t opt_dig_bare_cb(char prefix, const char *name,
-                                   ares_bool_t is_true, const char *value)
+static ci_bool_t opt_dig_bare_cb(char prefix, const char *name,
+                                   ci_bool_t is_true, const char *value)
 {
   (void)prefix;
   (void)name;
@@ -1027,36 +1027,36 @@ static ares_bool_t opt_dig_bare_cb(char prefix, const char *name,
   if (*value == '@') {
     free(global_config.servers);
     global_config.servers = strdup(value + 1);
-    return ARES_TRUE;
+    return CI_TRUE;
   }
 
   /* Make sure we don't pass options */
   if (*value == '-' || *value == '+') {
     snprintf(global_config.error, sizeof(global_config.error),
              "unrecognized argument %s", value);
-    return ARES_FALSE;
+    return CI_FALSE;
   }
 
   /* See if it is a DNS class */
-  if (ares_dns_class_fromstr(&global_config.qclass, value)) {
-    return ARES_TRUE;
+  if (ci_dns_class_fromstr(&global_config.qclass, value)) {
+    return CI_TRUE;
   }
 
   /* See if it is a DNS record type */
-  if (ares_dns_rec_type_fromstr(&global_config.qtype, value)) {
-    return ARES_TRUE;
+  if (ci_dns_rec_type_fromstr(&global_config.qtype, value)) {
+    return CI_TRUE;
   }
 
   /* See if it is a domain name */
-  if (ares_is_hostname(value)) {
+  if (ci_is_hostname(value)) {
     free(global_config.name);
     global_config.name = strdup(value);
-    return ARES_TRUE;
+    return CI_TRUE;
   }
 
   snprintf(global_config.error, sizeof(global_config.error),
            "unrecognized argument %s", value);
-  return ARES_FALSE;
+  return CI_FALSE;
 }
 
 static const struct {
@@ -1134,19 +1134,19 @@ static const struct {
   { 0,   NULL,         0,   0,               NULL,                                   NULL            }
 };
 
-static ares_bool_t read_cmdline(int argc, const char * const *argv,
+static ci_bool_t read_cmdline(int argc, const char * const *argv,
                                 int start_idx)
 {
   int    arg;
   size_t opt;
 
   for (arg = start_idx; arg < argc; arg++) {
-    ares_bool_t option_handled = ARES_FALSE;
+    ci_bool_t option_handled = CI_FALSE;
 
     for (opt = 0; !option_handled &&
                   (dig_options[opt].opt != NULL || dig_options[opt].cb != NULL);
          opt++) {
-      ares_bool_t is_true = ARES_TRUE;
+      ci_bool_t is_true = CI_TRUE;
       const char *value   = NULL;
       const char *nameptr = NULL;
       size_t      namelen;
@@ -1165,26 +1165,26 @@ static ares_bool_t read_cmdline(int argc, const char * const *argv,
       }
 
       /* Negated option if it has a 'no' prefix */
-      if (ares_streq_max(nameptr, "no", 2)) {
-        is_true  = ARES_FALSE;
+      if (ci_streq_max(nameptr, "no", 2)) {
+        is_true  = CI_FALSE;
         nameptr += 2;
       }
 
       if (dig_options[opt].separator != 0) {
         const char *ptr = strchr(nameptr, dig_options[opt].separator);
         if (ptr == NULL) {
-          namelen = ares_strlen(nameptr);
+          namelen = ci_strlen(nameptr);
         } else {
           namelen = (size_t)(ptr - nameptr);
           value   = ptr + 1;
         }
       } else {
-        namelen = ares_strlen(nameptr);
+        namelen = ci_strlen(nameptr);
       }
 
       /* Match name */
       if (dig_options[opt].name != NULL &&
-          !ares_streq_max(nameptr, dig_options[opt].name, namelen)) {
+          !ci_streq_max(nameptr, dig_options[opt].name, namelen)) {
         continue;
       }
 
@@ -1199,7 +1199,7 @@ static ares_bool_t read_cmdline(int argc, const char * const *argv,
           snprintf(global_config.error, sizeof(global_config.error),
                    "insufficient arguments for %c%s", dig_options[opt].prefix,
                    dig_options[opt].name);
-          return ARES_FALSE;
+          return CI_FALSE;
         }
         arg++;
         value = argv[arg];
@@ -1208,12 +1208,12 @@ static ares_bool_t read_cmdline(int argc, const char * const *argv,
       switch (dig_options[opt].type) {
         case OPT_TYPE_BOOL:
           {
-            ares_bool_t *b = dig_options[opt].opt;
+            ci_bool_t *b = dig_options[opt].opt;
             if (b == NULL) {
               snprintf(global_config.error, sizeof(global_config.error),
                        "invalid use for %c%s", dig_options[opt].prefix,
                        dig_options[opt].name);
-              return ARES_FALSE;
+              return CI_FALSE;
             }
             *b = is_true;
           }
@@ -1225,13 +1225,13 @@ static ares_bool_t read_cmdline(int argc, const char * const *argv,
               snprintf(global_config.error, sizeof(global_config.error),
                        "invalid use for %c%s", dig_options[opt].prefix,
                        dig_options[opt].name);
-              return ARES_FALSE;
+              return CI_FALSE;
             }
             if (value == NULL) {
               snprintf(global_config.error, sizeof(global_config.error),
                        "missing value for %c%s", dig_options[opt].prefix,
                        dig_options[opt].name);
-              return ARES_FALSE;
+              return CI_FALSE;
             }
             if (*str != NULL) {
               free(*str);
@@ -1246,19 +1246,19 @@ static ares_bool_t read_cmdline(int argc, const char * const *argv,
               snprintf(global_config.error, sizeof(global_config.error),
                        "invalid use for %c%s", dig_options[opt].prefix,
                        dig_options[opt].name);
-              return ARES_FALSE;
+              return CI_FALSE;
             }
             if (value == NULL) {
               snprintf(global_config.error, sizeof(global_config.error),
                        "missing value for %c%s", dig_options[opt].prefix,
                        dig_options[opt].name);
-              return ARES_FALSE;
+              return CI_FALSE;
             }
-            if (!ares_str_isnum(value)) {
+            if (!ci_str_isnum(value)) {
               snprintf(global_config.error, sizeof(global_config.error),
                        "%c%s is not a numeric value", dig_options[opt].prefix,
                        dig_options[opt].name);
-              return ARES_FALSE;
+              return CI_FALSE;
             }
             *s = strtoul(value, NULL, 10);
             break;
@@ -1270,19 +1270,19 @@ static ares_bool_t read_cmdline(int argc, const char * const *argv,
               snprintf(global_config.error, sizeof(global_config.error),
                        "invalid use for %c%s", dig_options[opt].prefix,
                        dig_options[opt].name);
-              return ARES_FALSE;
+              return CI_FALSE;
             }
             if (value == NULL) {
               snprintf(global_config.error, sizeof(global_config.error),
                        "missing value for %c%s", dig_options[opt].prefix,
                        dig_options[opt].name);
-              return ARES_FALSE;
+              return CI_FALSE;
             }
-            if (!ares_str_isnum(value)) {
+            if (!ci_str_isnum(value)) {
               snprintf(global_config.error, sizeof(global_config.error),
                        "%c%s is not a numeric value", dig_options[opt].prefix,
                        dig_options[opt].name);
-              return ARES_FALSE;
+              return CI_FALSE;
             }
             *s = (unsigned short)strtoul(value, NULL, 10);
             break;
@@ -1291,28 +1291,28 @@ static ares_bool_t read_cmdline(int argc, const char * const *argv,
           if (dig_options[opt].cb == NULL) {
             snprintf(global_config.error, sizeof(global_config.error),
                      "missing callback");
-            return ARES_FALSE;
+            return CI_FALSE;
           }
           if (!dig_options[opt].cb(dig_options[opt].prefix,
                                    dig_options[opt].name, is_true, value)) {
-            return ARES_FALSE;
+            return CI_FALSE;
           }
           break;
       }
-      option_handled = ARES_TRUE;
+      option_handled = CI_TRUE;
     }
 
     if (!option_handled) {
       snprintf(global_config.error, sizeof(global_config.error),
                "unrecognized option %s", argv[arg]);
-      return ARES_FALSE;
+      return CI_FALSE;
     }
   }
 
-  return ARES_TRUE;
+  return CI_TRUE;
 }
 
-static ares_bool_t read_rcfile(void)
+static ci_bool_t read_rcfile(void)
 {
   char         configdir[PATH_MAX];
   unsigned int cdlen = 0;
@@ -1329,19 +1329,19 @@ static ares_bool_t read_rcfile(void)
 
   size_t        rcargc;
   char        **rcargv;
-  ares_buf_t   *rcbuf;
-  ares_status_t rcstatus;
+  ci_buf_t   *rcbuf;
+  ci_status_t rcstatus;
 
 #if defined(WIN32)
   cdlen = (unsigned int)snprintf(configdir, sizeof(configdir), "%s/%s",
-                                 getenv("APPDATA"), "c-ares");
+                                 getenv("APPDATA"), "c-ci");
 
 #elif defined(__APPLE__)
   homedir = getenv("HOME");
   if (homedir != NULL) {
     cdlen = (unsigned int)snprintf(configdir, sizeof(configdir), "%s/%s/%s/%s",
                                    homedir, "Library", "Application Support",
-                                   "c-ares");
+                                   "c-ci");
   }
 
 #else
@@ -1365,7 +1365,7 @@ static ares_bool_t read_rcfile(void)
   if (cdlen == 0 || cdlen > sizeof(configdir)) {
     DEBUGF(
       fprintf(stderr, "read_cmdline() skipping rcfile parsing on directory\n"));
-    return ARES_TRUE;
+    return CI_TRUE;
   }
 
   rclen =
@@ -1373,35 +1373,35 @@ static ares_bool_t read_rcfile(void)
 
   if (rclen > sizeof(rcfile)) {
     DEBUGF(fprintf(stderr, "read_cmdline() skipping rcfile parsing on file\n"));
-    return ARES_TRUE;
+    return CI_TRUE;
   }
 
-  rcbuf = ares_buf_create();
-  if (ares_buf_load_file(rcfile, rcbuf) == ARES_SUCCESS) {
-    rcstatus = ares_buf_split_str(rcbuf, (const unsigned char *)"\n ", 2,
-                                  ARES_BUF_SPLIT_TRIM, 0, &rcargv, &rcargc);
+  rcbuf = ci_buf_create();
+  if (ci_buf_load_file(rcfile, rcbuf) == CI_SUCCESS) {
+    rcstatus = ci_buf_split_str(rcbuf, (const unsigned char *)"\n ", 2,
+                                  CI_BUF_SPLIT_TRIM, 0, &rcargv, &rcargc);
 
-    if (rcstatus == ARES_SUCCESS) {
+    if (rcstatus == CI_SUCCESS) {
       read_cmdline((int)rcargc, (const char * const *)rcargv, 0);
 
     } else {
       snprintf(global_config.error, sizeof(global_config.error),
-               "rcfile is invalid: %s", ares_strerror((int)rcstatus));
+               "rcfile is invalid: %s", ci_strerror((int)rcstatus));
     }
 
-    ares_free_array(rcargv, rcargc, ares_free);
+    ci_free_array(rcargv, rcargc, ci_free);
 
-    if (rcstatus != ARES_SUCCESS) {
-      ares_buf_destroy(rcbuf);
-      return ARES_FALSE;
+    if (rcstatus != CI_SUCCESS) {
+      ci_buf_destroy(rcbuf);
+      return CI_FALSE;
     }
 
   } else {
     DEBUGF(fprintf(stderr, "read_cmdline() failed to load rcfile"));
   }
-  ares_buf_destroy(rcbuf);
+  ci_buf_destroy(rcbuf);
 
-  return ARES_TRUE;
+  return CI_TRUE;
 }
 
 static void config_defaults(void)
@@ -1410,71 +1410,71 @@ static void config_defaults(void)
 
   global_config.opts.tries              = 3;
   global_config.opts.ndots              = 1;
-  global_config.opts.rd_flag            = ARES_TRUE;
-  global_config.opts.edns               = ARES_TRUE;
+  global_config.opts.rd_flag            = CI_TRUE;
+  global_config.opts.edns               = CI_TRUE;
   global_config.opts.udp_size           = 1232;
-  global_config.opts.aliases            = ARES_TRUE;
-  global_config.opts.display_class      = ARES_TRUE;
-  global_config.opts.display_ttl        = ARES_TRUE;
-  global_config.opts.display_command    = ARES_TRUE;
-  global_config.opts.display_stats      = ARES_TRUE;
-  global_config.opts.display_question   = ARES_TRUE;
-  global_config.opts.display_answer     = ARES_TRUE;
-  global_config.opts.display_authority  = ARES_TRUE;
-  global_config.opts.display_additional = ARES_TRUE;
-  global_config.opts.display_comments   = ARES_TRUE;
-  global_config.qclass                  = ARES_CLASS_IN;
-  global_config.qtype                   = ARES_REC_TYPE_A;
+  global_config.opts.aliases            = CI_TRUE;
+  global_config.opts.display_class      = CI_TRUE;
+  global_config.opts.display_ttl        = CI_TRUE;
+  global_config.opts.display_command    = CI_TRUE;
+  global_config.opts.display_stats      = CI_TRUE;
+  global_config.opts.display_question   = CI_TRUE;
+  global_config.opts.display_answer     = CI_TRUE;
+  global_config.opts.display_authority  = CI_TRUE;
+  global_config.opts.display_additional = CI_TRUE;
+  global_config.opts.display_comments   = CI_TRUE;
+  global_config.qclass                  = CI_CLASS_IN;
+  global_config.qtype                   = CI_REC_TYPE_A;
 }
 
 static void config_opts(void)
 {
-  global_config.optmask = ARES_OPT_FLAGS;
+  global_config.optmask = CI_OPT_FLAGS;
   if (global_config.opts.tcp) {
-    global_config.options.flags |= ARES_FLAG_USEVC;
+    global_config.options.flags |= CI_FLAG_USEVC;
   }
   if (global_config.opts.primary) {
-    global_config.options.flags |= ARES_FLAG_PRIMARY;
+    global_config.options.flags |= CI_FLAG_PRIMARY;
   }
   if (global_config.opts.edns) {
-    global_config.options.flags |= ARES_FLAG_EDNS;
+    global_config.options.flags |= CI_FLAG_EDNS;
   }
   if (global_config.opts.stayopen) {
-    global_config.options.flags |= ARES_FLAG_STAYOPEN;
+    global_config.options.flags |= CI_FLAG_STAYOPEN;
   }
   if (global_config.opts.dns0x20) {
-    global_config.options.flags |= ARES_FLAG_DNS0x20;
+    global_config.options.flags |= CI_FLAG_DNS0x20;
   }
   if (!global_config.opts.aliases) {
-    global_config.options.flags |= ARES_FLAG_NOALIASES;
+    global_config.options.flags |= CI_FLAG_NOALIASES;
   }
   if (!global_config.opts.rd_flag) {
-    global_config.options.flags |= ARES_FLAG_NORECURSE;
+    global_config.options.flags |= CI_FLAG_NORECURSE;
   }
   if (!global_config.opts.do_search) {
-    global_config.options.flags |= ARES_FLAG_NOSEARCH;
+    global_config.options.flags |= CI_FLAG_NOSEARCH;
   }
   if (global_config.opts.ignore_tc) {
-    global_config.options.flags |= ARES_FLAG_IGNTC;
+    global_config.options.flags |= CI_FLAG_IGNTC;
   }
   if (global_config.opts.port) {
-    global_config.optmask          |= ARES_OPT_UDP_PORT;
-    global_config.optmask          |= ARES_OPT_TCP_PORT;
+    global_config.optmask          |= CI_OPT_UDP_PORT;
+    global_config.optmask          |= CI_OPT_TCP_PORT;
     global_config.options.udp_port  = global_config.opts.port;
     global_config.options.tcp_port  = global_config.opts.port;
   }
 
-  global_config.optmask       |= ARES_OPT_TRIES;
+  global_config.optmask       |= CI_OPT_TRIES;
   global_config.options.tries  = (int)global_config.opts.tries;
 
-  global_config.optmask       |= ARES_OPT_NDOTS;
+  global_config.optmask       |= CI_OPT_NDOTS;
   global_config.options.ndots  = (int)global_config.opts.ndots;
 
-  global_config.optmask         |= ARES_OPT_EDNSPSZ;
+  global_config.optmask         |= CI_OPT_EDNSPSZ;
   global_config.options.ednspsz  = (int)global_config.opts.udp_size;
 
   if (global_config.opts.search != NULL) {
-    global_config.optmask          |= ARES_OPT_DOMAINS;
+    global_config.optmask          |= CI_OPT_DOMAINS;
     global_config.options.domains   = &global_config.opts.search;
     global_config.options.ndomains  = 1;
   }
@@ -1482,8 +1482,8 @@ static void config_opts(void)
 
 int main(int argc, char **argv)
 {
-  ares_channel_t *channel = NULL;
-  ares_status_t   status;
+  ci_channel_t *channel = NULL;
+  ci_status_t   status;
   int             rv = 0;
 
 #ifdef USE_WINSOCK
@@ -1492,9 +1492,9 @@ int main(int argc, char **argv)
   WSAStartup(wVersionRequested, &wsaData);
 #endif
 
-  status = (ares_status_t)ares_library_init(ARES_LIB_INIT_ALL);
-  if (status != ARES_SUCCESS) {
-    fprintf(stderr, "ares_library_init: %s\n", ares_strerror((int)status));
+  status = (ci_status_t)ci_library_init(CI_LIB_INIT_ALL);
+  if (status != CI_SUCCESS) {
+    fprintf(stderr, "ci_library_init: %s\n", ci_strerror((int)status));
     return 1;
   }
 
@@ -1525,20 +1525,20 @@ int main(int argc, char **argv)
 
   config_opts();
 
-  status = (ares_status_t)ares_init_options(&channel, &global_config.options,
+  status = (ci_status_t)ci_init_options(&channel, &global_config.options,
                                             global_config.optmask);
-  if (status != ARES_SUCCESS) {
-    fprintf(stderr, "ares_init_options: %s\n", ares_strerror((int)status));
+  if (status != CI_SUCCESS) {
+    fprintf(stderr, "ci_init_options: %s\n", ci_strerror((int)status));
     rv = 1;
     goto done;
   }
 
   if (global_config.servers) {
     status =
-      (ares_status_t)ares_set_servers_ports_csv(channel, global_config.servers);
-    if (status != ARES_SUCCESS) {
-      fprintf(stderr, "ares_set_servers_ports_csv: %s: %s\n",
-              ares_strerror((int)status), global_config.servers);
+      (ci_status_t)ci_set_servers_ports_csv(channel, global_config.servers);
+    if (status != CI_SUCCESS) {
+      fprintf(stderr, "ci_set_servers_ports_csv: %s: %s\n",
+              ci_strerror((int)status), global_config.servers);
       rv = 1;
       goto done;
     }
@@ -1546,16 +1546,16 @@ int main(int argc, char **argv)
 
   /* Debug */
   if (global_config.opts.display_command) {
-    printf("\n; <<>> c-ares DiG %s <<>>", ares_version(NULL));
+    printf("\n; <<>> c-ci DiG %s <<>>", ci_version(NULL));
     printf(" %s", global_config.name);
     printf("\n");
   }
 
   /* Enqueue a query for each separate name */
   status = enqueue_query(channel);
-  if (status != ARES_SUCCESS) {
+  if (status != CI_SUCCESS) {
     fprintf(stderr, "Failed to create query for %s: %s\n", global_config.name,
-            ares_strerror((int)status));
+            ci_strerror((int)status));
     rv = 1;
     goto done;
   }
@@ -1565,8 +1565,8 @@ int main(int argc, char **argv)
 
 done:
   free_config();
-  ares_destroy(channel);
-  ares_library_cleanup();
+  ci_destroy(channel);
+  ci_library_cleanup();
 
 #ifdef USE_WINSOCK
   WSACleanup();

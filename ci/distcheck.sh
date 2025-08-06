@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
 set -e -x
 
@@ -11,22 +11,22 @@ if [ "$OS" = "Linux" ]; then
     ./configure
     make dist VERSION=99.98.97
     # Extract distribution tarball for building
-    tar xvf c-ares-99.98.97.tar.gz
-    cd c-ares-99.98.97
+    tar xvf c-ci-99.98.97.tar.gz
+    cd c-ci-99.98.97
     # Build autotools
     mkdir build-autotools
     cd build-autotools
     ../configure --disable-symbol-hiding --enable-expose-statics --enable-maintainer-mode --enable-debug
     make
     cd test
-    $TEST_WRAP ./arestest -4 -v $TEST_FILTER
+    $TEST_WRAP ./citest -4 -v $TEST_FILTER
     cd ../..
     # Build CMake
     mkdir build-cmake
     cd build-cmake
-    cmake -DCMAKE_BUILD_TYPE=DEBUG -DCARES_STATIC=ON -DCARES_STATIC_PIC=ON -DCARES_BUILD_TESTS=ON ..
+    cmake -DCMAKE_BUILD_TYPE=DEBUG -DCI_STATIC=ON -DCI_STATIC_PIC=ON -DCI_BUILD_TESTS=ON ..
     make
     cd bin
-    $TEST_WRAP ./arestest -4 -v $TEST_FILTER
+    $TEST_WRAP ./citest -4 -v $TEST_FILTER
     cd ../..
 fi

@@ -1,5 +1,5 @@
 # Semi-public headers
-The headers listed here all export symbols into the ares namespace as public
+The headers listed here all export symbols into the ci namespace as public
 symbols, but these headers are NOT included in the distribution.  They are
 meant to be used by other tools such as `adig` and `ahost`.
 

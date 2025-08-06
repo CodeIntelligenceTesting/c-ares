@@ -1,5 +1,5 @@
 #
-# c-ares Makefile for djgpp/gcc/Watt-32.
+# c-ci Makefile for djgpp/gcc/Watt-32.
 # Copyright (C) Gisle Vanem <gvanem@yahoo.no>
 # SPDX-License-Identifier: MIT
 #
@@ -63,7 +63,7 @@ CFLAGS = -g -O2 -I./include -I./src/lib -I./src/lib/include \
          -Wno-long-long \
          -DWATT32 -DHAVE_CONFIG_H   \
          -D_REENTRANT \
-         -DCARES_NO_DEPRECATED \
+         -DCI_NO_DEPRECATED \
          -Dselect=select_s
 
 # Can't enable -Wredundant-decls due to WATT32 issues
@@ -86,26 +86,26 @@ else
   CC = gcc
 endif
 
-GENERATED = src/lib/ares_config.h \
-            include/ares_build.h
+GENERATED = src/lib/ci_config.h \
+            include/ci_build.h
 
-TARGETS = libcares.a adig.exe ahost.exe
+TARGETS = libcci.a adig.exe ahost.exe
 
-.SECONDARY: $(OBJ_DIR)/ares_getopt.o
+.SECONDARY: $(OBJ_DIR)/ci_getopt.o
 
 all: $(OBJ_DIR) $(OBJ_SUBDIRS) $(GENERATED) $(TARGETS)
-	@echo Welcome to c-ares.
+	@echo Welcome to c-ci.
 
-libcares.a: $(OBJECTS)
+libcci.a: $(OBJECTS)
 	ar rs $@ $(OBJECTS)
 
-src/lib/ares_config.h: src/lib/config-dos.h
+src/lib/ci_config.h: src/lib/config-dos.h
 	cp --update $< $@
 
-include/ares_build.h: include/ares_build.h.dist
+include/ci_build.h: include/ci_build.h.dist
 	cp --update $< $@
 
-%.exe: src/tools/%.c $(OBJ_DIR)/ares_getopt.o libcares.a
+%.exe: src/tools/%.c $(OBJ_DIR)/ci_getopt.o libcci.a
 	$(call compile_and_link, $@, $^ $(WATT32_LIB))
 
 # Clean generated files and objects.

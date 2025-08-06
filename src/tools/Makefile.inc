@@ -1,5 +1,5 @@
-# Copyright (C) The c-ares project and its contributors
+# Copyright (C) The c-ci project and its contributors
 # SPDX-License-Identifier: MIT
-SAMPLESOURCES = ares_getopt.c
+SAMPLESOURCES = ci_getopt.c
 
-SAMPLEHEADERS = ares_getopt.h
+SAMPLEHEADERS = ci_getopt.h

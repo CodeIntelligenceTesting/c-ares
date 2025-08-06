@@ -10,9 +10,9 @@
 Installing Binary Packages
 ==========================
 
-Lots of people download binary distributions of c-ares. This document
-does not describe how to install c-ares using such a binary package.
-This document describes how to compile, build and install c-ares from
+Lots of people download binary distributions of c-ci. This document
+does not describe how to install c-ci using such a binary package.
+This document describes how to compile, build and install c-ci from
 source code.
 
 Building from Git
@@ -48,10 +48,10 @@ Get a full listing of all available configure options by invoking it like:
 
     ./configure --help
 
-If you want to install c-ares in a different file hierarchy than /usr/local,
+If you want to install c-ci in a different file hierarchy than /usr/local,
 you need to specify that already when running configure:
 
-    ./configure --prefix=/path/to/c-ares/tree
+    ./configure --prefix=/path/to/c-ci/tree
 
 If you happen to have write permission in that directory, you can do `make
 install` without being root. An example of this would be to make a local
@@ -75,7 +75,7 @@ by running configure like:
 
     ./configure --disable-shared
 
-If you're a c-ares developer and use gcc, you might want to enable more
+If you're a c-ci developer and use gcc, you might want to enable more
 debug options with the `--enable-debug` option.
 
 ### Special Cases
@@ -94,9 +94,9 @@ The Open Watcom C compiler on Linux requires configuring with the variables:
 (This section was graciously brought to us by Jim Duey, with additions by
 Dan Fandrich)
 
-Download and unpack the c-ares package.
+Download and unpack the c-ci package.
 
-`cd` to the new directory. (e.g. `cd c-ares-1.7.6`)
+`cd` to the new directory. (e.g. `cd c-ci-1.7.6`)
 
 Set environment variables to point to the cross-compile toolchain and call
 configure with any options you need.  Be sure and specify the `--host` and
@@ -126,7 +126,7 @@ export NM=ppc_405-nm
 You may also need to provide a parameter like `--with-random=/dev/urandom`
 to configure as it cannot detect the presence of a random number
 generating device for a target system.  The `--prefix` parameter
-specifies where c-ares will be installed.  If `configure` completes
+specifies where c-ci will be installed.  If `configure` completes
 successfully, do `make` and `make install` as usual.
 
 In some cases, you may be able to simplify the above commands to as
@@ -138,7 +138,7 @@ little as:
 ### Cygwin (Windows)
 
 Almost identical to the unix installation. Run the configure script in the
-c-ares root with `sh configure`. Make sure you have the sh executable in
+c-ci root with `sh configure`. Make sure you have the sh executable in
 `/bin/` or you'll see the configure fail toward the end.
 
 Run `make`
@@ -150,12 +150,12 @@ Run `make`
 
 As QNX is targeted for resource constrained environments, the QNX headers
 set conservative limits. This includes the `FD_SETSIZE` macro, set by default
-to 32. Socket descriptors returned within the c-ares library may exceed this,
+to 32. Socket descriptors returned within the c-ci library may exceed this,
 resulting in memory faults/SIGSEGV crashes when passed into `select(..)`
 calls using `fd_set` macros.
 
 A good all-round solution to this is to override the default when building
-c-ares, by overriding `CFLAGS` during configure, example:
+c-ci, by overriding `CFLAGS` during configure, example:
 
     # configure CFLAGS='-DFD_SETSIZE=64 -g -O2'
 
@@ -169,7 +169,7 @@ The library can be cross-compiled using gccsdk as follows:
     make
 
 where `riscos-gcc` and `riscos-ar` are links to the gccsdk tools.
-You can then link your program with `c-ares/lib/.libs/libcares.a`.
+You can then link your program with `c-ci/lib/.libs/libcci.a`.
 
 
 ### Android
@@ -210,7 +210,7 @@ Method using a configure cross-compile (tested with Android NDK r7b):
 CMake builds
 ============
 
-Current releases of c-ares introduce a CMake v3+ build system that has been
+Current releases of c-ci introduce a CMake v3+ build system that has been
 tested on most platforms including Windows, Linux, FreeBSD, macOS, AIX and
 Solaris.
 
@@ -220,7 +220,7 @@ In the most basic form, building with CMake might look like:
 cd /path/to/cmake/source
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local/cares ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local/cci ..
 make
 sudo make install
 ```
@@ -233,15 +233,15 @@ The values defined are all boolean and take values like On, Off, True, False.
 
 | Option Name                 | Description                                                           | Default Value  |
 |-----------------------------|-----------------------------------------------------------------------|----------------|
-| CARES_STATIC                | Build the static library                                              | Off            |
-| CARES_SHARED                | Build the shared library                                              | On             |
-| CARES_INSTALL               | Hook in installation, useful to disable if chain building             | On             |
-| CARES_STATIC_PIC            | Build the static library as position-independent                      | Off            |
-| CARES_BUILD_TESTS           | Build and run tests                                                   | Off            |
-| CARES_BUILD_CONTAINER_TESTS | Build and run container tests (implies CARES_BUILD_TESTS, Linux only) | Off            |
-| CARES_BUILD_TOOLS           | Build tools                                                           | On             |
-| CARES_SYMBOL_HIDING         | Hide private symbols in shared libraries                              | Off            |
-| CARES_THREADS               | Build with thread-safety support                                      | On             |
+| CI_STATIC                | Build the static library                                              | Off            |
+| CI_SHARED                | Build the shared library                                              | On             |
+| CI_INSTALL               | Hook in installation, useful to disable if chain building             | On             |
+| CI_STATIC_PIC            | Build the static library as position-independent                      | Off            |
+| CI_BUILD_TESTS           | Build and run tests                                                   | Off            |
+| CI_BUILD_CONTAINER_TESTS | Build and run container tests (implies CI_BUILD_TESTS, Linux only) | Off            |
+| CI_BUILD_TOOLS           | Build tools                                                           | On             |
+| CI_SYMBOL_HIDING         | Hide private symbols in shared libraries                              | Off            |
+| CI_THREADS               | Build with thread-safety support                                      | On             |
 
 Ninja
 -----
@@ -253,7 +253,7 @@ heavily parallelize builds.  Its use is very similar to the normal build:
 cd /path/to/cmake/source
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local/cares -G "Ninja" ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local/cci -G "Ninja" ..
 ninja
 sudo ninja install
 ```
@@ -265,7 +265,7 @@ Windows MSVC Command Line
 cd \path\to\cmake\source
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=C:\cares -G "NMake Makefiles" ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=C:\cci -G "NMake Makefiles" ..
 nmake
 nmake install
 ```
@@ -276,7 +276,7 @@ Windows MinGW-w64 Command Line via MSYS
 cd \path\to\cmake\source
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=C:\cares -G "MSYS Makefiles" ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=C:\cci -G "MSYS Makefiles" ..
 make
 make install
 ```
@@ -342,17 +342,17 @@ provided that you installed Visual C/C++ 6 in the default directory.
 Further details in [README.msvc](README.msvc)
 
 
-### Important static c-ares usage note
+### Important static c-ci usage note
 
-When building an application that uses the static c-ares library, you must
-add `-DCARES_STATICLIB` to your `CFLAGS`.  Otherwise the linker will look for
+When building an application that uses the static c-ci library, you must
+add `-DCI_STATICLIB` to your `CFLAGS`.  Otherwise the linker will look for
 dynamic import symbols.
 
 
 DOS
 ---
 
-c-ares supports building as a 32bit protected mode application via
+c-ci supports building as a 32bit protected mode application via
 [DJGPP](https://www.delorie.com/djgpp/).  It is recommended to use a DJGPP
 cross compiler from [Andrew Wu](https://github.com/andrewwutw/build-djgpp)
 as building directly in a DOS environment can be difficult.
@@ -362,10 +362,10 @@ built using the same compiler.  It is recommended to build the latest `master`
 branch from [GitHub](https://github.com/sezero/watt32/tree/master).
 
 Finally, the `DJ_PREFIX` and `WATT_ROOT` environment variables must be set
-appropriately before calling `make Makefile.dj` to build c-ares.
+appropriately before calling `make Makefile.dj` to build c-ci.
 
 Please refer to our CI
-[GitHub Actions Workflow](https://github.com/c-ares/c-ares/blob/main/.github/workflows/djgpp.yml)
+[GitHub Actions Workflow](https://github.com/c-ci/c-ci/blob/main/.github/workflows/djgpp.yml)
 for a full build example, including building the latest Watt-32 release.
 
 
@@ -395,7 +395,7 @@ If you're getting huge binaries, probably your makefiles have the `-g` in
 NetWare
 -------
 
-To compile `libcares.a` / `libcares.lib` you need:
+To compile `libcci.a` / `libcci.lib` you need:
 
  - either any gcc / nlmconv, or CodeWarrior 7 PDK 4 or later.
  - gnu make and awk running on the platform you compile on;
@@ -414,22 +414,22 @@ sure that the var `OSTYPE` contains the string 'linux'; set the var
 VCPKG
 =====
 
-You can build and install c-ares using [vcpkg](https://github.com/Microsoft/vcpkg/) dependency manager:
+You can build and install c-ci using [vcpkg](https://github.com/Microsoft/vcpkg/) dependency manager:
 
 ```sh or powershell
     git clone https://github.com/Microsoft/vcpkg.git
     cd vcpkg
     ./bootstrap-vcpkg.sh
     ./vcpkg integrate install
-    ./vcpkg install c-ares
+    ./vcpkg install c-ci
 ```
 
-The c-ares port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
+The c-ci port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
 
 WATCOM
 =====
 
-To build c-ares with OpenWatcom, you need to have at least version 1.9 of OpenWatcom. You can get the latest version from [http://openwatcom.org/ftp/install/](http://openwatcom.org/ftp/install/). Install the version that corresponds to your current host platform.
+To build c-ci with OpenWatcom, you need to have at least version 1.9 of OpenWatcom. You can get the latest version from [http://openwatcom.org/ftp/install/](http://openwatcom.org/ftp/install/). Install the version that corresponds to your current host platform.
 
 After installing OpenWatcom, open a new command prompt and execute the following commands:
 
@@ -439,13 +439,13 @@ After installing OpenWatcom, open a new command prompt and execute the following
   wmake -u -f Makefile.Watcom
 ```
 
-After running wmake, you should get adig.exe, ahost.exe, and the static and dynamic versions of libcares.
+After running wmake, you should get adig.exe, ahost.exe, and the static and dynamic versions of libcci.
 
 PORTS
 =====
 
 This is a probably incomplete list of known hardware and operating systems
-that c-ares has been compiled for. If you know a system c-ares compiles and
+that c-ci has been compiled for. If you know a system c-ci compiles and
 runs on, that isn't listed, please let us know!
 
      - Linux (i686, x86_64, AARCH64, and more)
@@ -466,7 +466,7 @@ runs on, that isn't listed, please let us know!
 Useful URLs
 ===========
 
- - c-ares: https://c-ares.org/
+ - c-ci: https://c-ci.org/
  - MinGW-w64: http://mingw-w64.sourceforge.net/
  - MSYS2: https://msys2.org
  - OpenWatcom: http://www.openwatcom.org/
